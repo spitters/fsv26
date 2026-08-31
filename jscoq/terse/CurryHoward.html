@@ -1,0 +1,2012 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="common/css/sf.css" rel="stylesheet" type="text/css" />
+<title>CurryHoward: A Formal Development of the Curry-Howard Correspondence</title>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="common/slides.js"></script>
+<link href="common/css/slides.css" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" type="text/css" href="../dist/frontend/index.css"/>
+<link rel="stylesheet" type="text/css" href="common/css/jscoq.css"/>
+<link rel="stylesheet" type="text/css" href="../pls-deck.css"/>
+<script src="../jscoq-agent-sf2.js" type="module"></script>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<div id='logoinheader'><a href='https://softwarefoundations.cis.upenn.edu'>
+<img src='common/media/image/sf_logo_sm.png' alt='Software Foundations Logo'></a></div>
+<div class='booktitleinheader'><a href='index.html'>Volume 1: Logical Foundations</a></div>
+<ul id='menu'>
+   <li class='section_name'><a href='toc.html'>Table of Contents</a></li>
+   <li class='section_name'><a href='coqindex.html'>Index</a></li>
+   <li class='section_name'><a href='deps.html'>Roadmap</a></li>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">CurryHoward<span class="subtitle">A Formal Development of the Curry-Howard Correspondence</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ In <a href="ProofObjects.html"><span class="inlineref">ProofObjects</span></a> we saw that Rocq tactics construct <i>proof
+    objects</i>: programs in Gallina whose types are the statements being proved.
+    Thus, proving a theorem is also writing a program.
+
+<div class="paragraph"> </div>
+
+    This suggests a deeper connection: proofs transform evidence for
+    assumptions into evidence for conclusions, just as functions transform
+    inputs into outputs. Hence programs correspond to proofs, and types to
+    propositions—this is the Curry–Howard correspondence.
+
+<div class="paragraph"> </div>
+
+    In this chapter we formalize that correspondence. We define a proof system
+    for logic and a type system for programs, both inside Rocq. We show:
+<ul class="doclist">
+<li> If a program is well-typed, its type corresponds to a provable proposition.
+
+</li>
+<li> If a proposition is provable, there exists a well-typed program of that type.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    Thus, programs and proofs correspond in both directions.
+
+<div class="paragraph"> </div>
+
+    Why is this exciting? It reveals that logic and programming share the same
+    underlying structure: logical connectives correspond to programming
+    constructs, and proofs correspond to executable programs. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">List</span> <span class="id" title="var">String</span>.<br/>
+<span class="id" title="keyword">Import</span> <span class="id" title="var">ListNotations</span>.<br/>
+</div>
+
+<div class="doc">
+We will first develop the correspondence in a setting that focuses
+    on implication. Later we will add conjunction and disjunction. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Module</span> <span class="id" title="var">Implicational</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab377"></a><h1 class="section">Logic</h1>
+
+<div class="paragraph"> </div>
+
+ So far we have been doing logic <i>with</i> Rocq. To make the
+    correspondence precise, we instead need to do logic <i>embedded in</i> Rocq: we
+    define propositions as an inductive type and provability as an inductive
+    relation. The logic formalized here is known as <i>propositional constructive
+    logic</i>.
+</div>
+
+<div class="doc">
+<a id="lab378"></a><h2 class="section">Propositions</h2>
+
+<div class="paragraph"> </div>
+
+ We start by modeling propositions.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> An <i>atom</i> is an atomic proposition, much like <span class="inlinecode"><span class="id" title="var">P</span></span> in <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>, as we
+      are accustomed to in Rocq. Atomic propositions are given names using
+      Rocq <span class="inlinecode"><span class="id" title="var">string</span></span>s.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> An implication is the usual <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">Q</span></span>.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> The contradictory proposition is named <span class="inlinecode"><span class="id" title="var">false</span></span>. 
+
+</li>
+</ul>
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">proposition</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">atom</span> (<span class="id" title="var">id</span> : <span class="id" title="var">string</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">implies</span> (<span class="id" title="var">p</span> <span class="id" title="var">q</span> : <span class="id" title="var">proposition</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">false</span>.<br/>
+</div>
+
+<div class="doc">
+From that starting point, we can define negation and truth in terms
+    of other propositions. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">not</span> (<span class="id" title="var">p</span> : <span class="id" title="var">proposition</span>) : <span class="id" title="var">proposition</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">implies</span> <span class="id" title="var">p</span> <span class="id" title="var">false</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">true</span> : <span class="id" title="var">proposition</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">implies</span> <span class="id" title="var">false</span> <span class="id" title="var">false</span>.<br/>
+</div>
+
+<div class="doc">
+Here are some examples of propositions. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">ex_P</span> :=<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;P&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;P&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">implies</span> (<span class="id" title="var">atom</span> "P") (<span class="id" title="var">atom</span> "P").<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">ex_PQ</span> :=<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;P&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Q&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;P&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">implies</span> (<span class="id" title="var">atom</span> "P") (<span class="id" title="var">implies</span> (<span class="id" title="var">atom</span> "Q") (<span class="id" title="var">atom</span> "P")).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">ex_PQR</span> :=<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;(P&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Q&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;R)&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;(P&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Q)&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;P&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;R&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">implies</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">implies</span> (<span class="id" title="var">atom</span> "P") (<span class="id" title="var">implies</span> (<span class="id" title="var">atom</span> "Q") (<span class="id" title="var">atom</span> "R")))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">implies</span> (<span class="id" title="var">implies</span> (<span class="id" title="var">atom</span> "P") (<span class="id" title="var">atom</span> "Q")) (<span class="id" title="var">implies</span> (<span class="id" title="var">atom</span> "P") (<span class="id" title="var">atom</span> "R"))).<br/>
+</div>
+
+<div class="doc">
+<a id="lab379"></a><h2 class="section">Proofs</h2>
+
+<div class="paragraph"> </div>
+
+ A <i>proof system</i> specifies how to construct correct proofs via
+    axioms and inference rules. We use <i>natural deduction</i>, defined by a
+    <i>provability</i> relation.
+
+<div class="paragraph"> </div>
+
+    The relation <span class="inlinecode"><span class="id" title="var">A</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" title="var">p</span></span> means that proposition <span class="inlinecode"><span class="id" title="var">p</span></span> is provable from
+    assumptions <span class="inlinecode"><span class="id" title="var">A</span></span>. We write <span class="inlinecode"><span class="id" title="var">A</span>,</span> <span class="inlinecode"><span class="id" title="var">p</span></span> for <span class="inlinecode"><span class="id" title="var">A</span></span> extended with <span class="inlinecode"><span class="id" title="var">p</span></span>. 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (axiom) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A, p &#x22A2; p</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A, p &#x22A2; q</td>
+  <td class="infrulenamecol" rowspan="3">
+    (implies intro) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> q</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> q&nbsp;&nbsp;&nbsp;A &#x22A2; p</td>
+  <td class="infrulenamecol" rowspan="3">
+    (implies elim) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; q</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; false</td>
+  <td class="infrulenamecol" rowspan="3">
+    (false elim) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ The rules:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Axiom: proof "by assumption".
+
+</li>
+<li> Implies intro: to prove an implication, assume its premise and
+      prove its conclusion.
+
+</li>
+<li> Implies elim (modus ponens): given an implication and a proof of
+      its premise, you obtain a proof of its conclusion.
+
+</li>
+<li> False elim: from a contradiction, anything follows.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    Introduction rules put a connective in the conclusion; elimination rules
+    remove a connective from the premise(s). Implication represents a
+    transformation from proofs of <span class="inlinecode"><span class="id" title="var">p</span></span> to proofs of <span class="inlinecode"><span class="id" title="var">q</span></span>. There is no rule for
+    introducing <span class="inlinecode"><span class="id" title="var">false</span></span>. 
+<div class="paragraph"> </div>
+
+ The natural deduction inference rules are straightforward to formalize
+    in Rocq. It is convenient to represent the set of assumptions as a list,
+    since we already have lots of experience with that type. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">provable</span> : <span class="id" title="var">list</span> <span class="id" title="var">proposition</span> → <span class="id" title="var">proposition</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">axiom</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">In</span> <span class="id" title="var">p</span> <span class="id" title="var">A</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">implies_intro</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> (<span class="id" title="var">p</span> :: <span class="id" title="var">A</span>) <span class="id" title="var">q</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> (<span class="id" title="var">implies</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">implies_elim</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> (<span class="id" title="var">implies</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">q</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">false_elim</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">false</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span>.<br/>
+</div>
+
+<div class="doc">
+Here are some examples of using the proof system. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Example</span> <span class="id" title="var">ex_P_provable</span> : <span class="id" title="var">provable</span> [] <span class="id" title="var">ex_P</span>.<br/>
+<span class="comment">(*<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--------------------&nbsp;(axiom)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p&nbsp;&#x22A2;&nbsp;p<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--------------------&nbsp;(implies&nbsp;intro)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2;&nbsp;p&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;p<br/>
+*)</span><br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">ex_P</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">implies_intro</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">axiom</span>. <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">left</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">ex_PQ_provable</span> : <span class="id" title="var">provable</span> [] <span class="id" title="var">ex_PQ</span>.<br/>
+<span class="comment">(*<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------&nbsp;(axiom)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P,&nbsp;Q&nbsp;&#x22A2;&nbsp;P<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------&nbsp;(implies&nbsp;intro)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P&nbsp;&#x22A2;&nbsp;Q&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;P<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------&nbsp;(implies&nbsp;intro)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2;&nbsp;P&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Q&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;P<br/>
+*)</span><br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;WORK&nbsp;IN&nbsp;CLASS&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">ex_mp</span> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">P</span> <span class="id" title="var">Q</span> : <span class="id" title="var">string</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">provable</span> [<span class="id" title="var">implies</span> (<span class="id" title="var">atom</span> <span class="id" title="var">P</span>) (<span class="id" title="var">atom</span> <span class="id" title="var">Q</span>); (<span class="id" title="var">atom</span> <span class="id" title="var">P</span>)] (<span class="id" title="var">atom</span> <span class="id" title="var">Q</span>).<br/>
+<span class="comment">(*<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;-------------------&nbsp;(axiom)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--------------&nbsp;(axiom)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;P&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Q,&nbsp;P&nbsp;&#x22A2;&nbsp;P&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Q,&nbsp;P&nbsp;&#x22A2;&nbsp;P<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;----------------------------------------------&nbsp;(implies&nbsp;elim)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Q,&nbsp;P&nbsp;&#x22A2;&nbsp;Q<br/>
+*)</span><br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;WORK&nbsp;IN&nbsp;CLASS&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+ <!-- /quiz -->
+</div><div class="quiz">
+
+
+<div class="doc">
+    To prove <span class="inlinecode">¬<span class="id" title="var">P</span></span> from assumptions <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">Q</span></span> and <span class="inlinecode">¬<span class="id" title="var">Q</span></span>,
+    we need to show <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">false</span></span>.
+
+<div class="paragraph"> </div>
+
+    What is the key intermediate proposition to derive?
+
+<div class="paragraph"> </div>
+
+    (A) <span class="inlinecode"><span class="id" title="var">P</span></span>
+
+<div class="paragraph"> </div>
+
+    (B) <span class="inlinecode"><span class="id" title="var">Q</span></span>
+
+<div class="paragraph"> </div>
+
+    (C) <span class="inlinecode"><span class="id" title="var">false</span></span>
+
+<div class="paragraph"> </div>
+
+    (D) <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">Q</span></span>
+
+<div class="paragraph"> </div>
+
+
+</div>
+<div class="code">
+
+<div class="doc">
+We need <span class="inlinecode"><span class="id" title="var">Q</span></span>.
+<ul class="doclist">
+<li> Start with <span class="inlinecode"><span class="id" title="var">P</span></span>.
+
+</li>
+<li> Use <span class="inlinecode"><span class="id" title="var">P</span>→<span class="id" title="var">Q</span></span> to get <span class="inlinecode"><span class="id" title="var">Q</span></span>. &lt;-- That is the intermediate proposition.
+
+</li>
+<li> Use <span class="inlinecode"><span class="id" title="var">Q</span>→<span class="id" title="var">false</span></span> to get <span class="inlinecode"><span class="id" title="var">false</span></span>.
+
+</li>
+</ul>
+ 
+</div>
+</div></div>
+<div class="quiz solution">
+<div class="doc"><b>Solution</b>
+</div>
+<div class="code">
+(** We need [Q].<br/>
+&nbsp;&nbsp;- Start with [P].<br/>
+&nbsp;&nbsp;- Use [P-&gt;Q] to get [Q]. &lt;-- That is the intermediate proposition.<br/>
+&nbsp;&nbsp;- Use [Q-&gt;false] to get [false].<br/>
+ *)<br/>
+</div></div>
+ <!-- /quiz -->
+<div class="quiz">
+
+
+<div class="doc">
+    In a proof of <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">Q</span>,</span> <span class="inlinecode">¬<span class="id" title="var">Q</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode">¬<span class="id" title="var">P</span></span>, which rules are required?
+
+<div class="paragraph"> </div>
+
+    (A) <span class="inlinecode"><span class="id" title="var">axiom</span></span> and <span class="inlinecode"><span class="id" title="var">implies_intro</span></span>
+
+<div class="paragraph"> </div>
+
+    (B) <span class="inlinecode"><span class="id" title="var">axiom</span></span> and <span class="inlinecode"><span class="id" title="var">false_elim</span></span>
+
+<div class="paragraph"> </div>
+
+    (C) <span class="inlinecode"><span class="id" title="var">axiom</span></span>, <span class="inlinecode"><span class="id" title="var">implies_elim</span></span>, and <span class="inlinecode"><span class="id" title="var">implies_intro</span></span>
+
+<div class="paragraph"> </div>
+
+    (D) <span class="inlinecode"><span class="id" title="var">axiom</span></span>, <span class="inlinecode"><span class="id" title="var">implies_intro</span></span>, and <span class="inlinecode"><span class="id" title="var">false_elim</span></span>
+
+<div class="paragraph"> </div>
+
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Example</span> <span class="id" title="var">modus_tollens</span> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">p</span> <span class="id" title="var">q</span> : <span class="id" title="var">proposition</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">provable</span> [<span class="id" title="var">implies</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>; <span class="id" title="var">not</span> <span class="id" title="var">q</span>] (<span class="id" title="var">not</span> <span class="id" title="var">p</span>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>. <span class="id" title="tactic">unfold</span> <span class="id" title="var">not</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">implies_intro</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">implies_elim</span> <span class="id" title="keyword">with</span> <span class="id" title="var">q</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="var">axiom</span>. <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">right</span>. <span class="id" title="tactic">right</span>. <span class="id" title="tactic">left</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="var">implies_elim</span> <span class="id" title="keyword">with</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span> <span class="id" title="var">axiom</span>. <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">right</span>. <span class="id" title="tactic">left</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span> <span class="id" title="var">axiom</span>. <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">left</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div></div>
+<div class="quiz solution">
+<div class="doc"><b>Solution</b>
+</div>
+<div class="code">
+Example modus_tollens : forall (p q : proposition),<br/>
+&nbsp;&nbsp;provable [implies p q; not q] (not p).<br/>
+Proof.<br/>
+&nbsp;&nbsp;intros p q. unfold not.<br/>
+&nbsp;&nbsp;apply implies_intro.<br/>
+&nbsp;&nbsp;apply implies_elim with q.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- apply axiom. simpl. right. right. left. reflexivity.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- apply implies_elim with p.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ apply axiom. simpl. right. left. reflexivity.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ apply axiom. simpl. left. reflexivity.<br/>
+Qed.<br/>
+</div></div>
+ <!-- /quiz -->
+
+<div class="doc">
+The use of the <span class="inlinecode"><span class="id" title="var">axiom</span></span> rule followed by reasoning about <span class="inlinecode"><span class="id" title="var">In</span></span> gets tedious.
+    We can automate it with the following little custom tactic. The techniques
+    used in the tactic will be explained in <a href="Auto.html"><span class="inlineref">Auto</span></a> (or alternatively
+    <a href="AltAuto.html"><span class="inlineref">AltAuto</span></a>). 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">by_assumption</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">constructor</span>;<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">repeat</span> <span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| &#x22A2; <span class="id" title="var">In</span> ?<span class="id" title="var">p</span> (?<span class="id" title="var">h</span> :: ?<span class="id" title="var">t</span>) ⇒ <span class="id" title="tactic">simpl</span><br/>
+&nbsp;&nbsp;| &#x22A2; (?<span class="id" title="var">x</span> = ?<span class="id" title="var">y</span>) ∨ ?<span class="id" title="var">p</span> ⇒ <span class="id" title="tactic">first</span> [<span class="id" title="tactic">left</span>; <span class="id" title="tactic">reflexivity</span> | <span class="id" title="tactic">right</span>]<br/>
+&nbsp;&nbsp;| &#x22A2; <span class="id" title="var">False</span> ⇒ <span class="id" title="tactic">idtac</span> "by_assumption failed: not in assumptions"; <span class="id" title="tactic">fail</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">in_assumptions</span> : <span class="id" title="var">provable</span> [<span class="id" title="var">atom</span> "P"] (<span class="id" title="var">atom</span> "P").<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">by_assumption</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">not_in_assumptions</span> : <span class="id" title="var">provable</span> [<span class="id" title="var">atom</span> "Q"] (<span class="id" title="var">atom</span> "P").<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">by_assumption</span>.<br/>
+<span class="id" title="keyword">Abort</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">ex_P_provable'</span> : <span class="id" title="var">provable</span> [] <span class="id" title="var">ex_P</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">ex_P</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">implies_intro</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">by_assumption</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab380"></a><h1 class="section">Programs</h1>
+
+<div class="paragraph"> </div>
+
+ Much like we just embedded logic in Rocq, we now need to embed a
+    programming language in Rocq. The language we formalize here is known as
+    the <i>simply-typed pure lambda calculus</i>. It is the core of any functional
+    programming language.  
+</div>
+
+<div class="doc">
+<a id="lab381"></a><h2 class="section">Syntax</h2>
+
+<div class="paragraph"> </div>
+
+ We start by modeling the types of programs.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> A <i>type variable</i> stands for an unknown type, much like the <span class="inlinecode"><span class="id" title="var">X</span></span>
+      in <span class="inlinecode"><span class="id" title="var">X</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">Type</span></span> that we have used when defining polymorphic lists
+      in Rocq. We again use Rocq <span class="inlinecode"><span class="id" title="var">string</span></span>s as identifiers.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> An <i>arrow</i> represents a function type, like <span class="inlinecode"><span class="id" title="var">t<sub>1</sub></span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">t<sub>2</sub></span></span> in Rocq. 
+
+</li>
+</ul>
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Theorem ex_PQR_provable_rocq : forall (P Q R : Prop),
+  (P -&gt; Q -&gt; R) -&gt; (P -&gt; Q) -&gt; P -&gt; R.
+Proof.
+   Admitted.
+
+Theorem ex_PQR_provable_nd : provable [] ex_PQR.
+Proof.
+   Admitted.
+
+Theorem implies_trans : forall (P Q R : string),
+  provable []
+  (implies (implies (atom P) (atom Q))
+           (implies (implies (atom Q) (atom R))
+                    (implies (atom P) (atom R)))).
+Proof.
+   Admitted.
+
+Theorem exfalso_quodlibet : forall (P : string),
+  provable [] (implies false (atom P)).
+Proof.
+   Admitted.
+
+Theorem contrapositive : forall (P Q : string),
+  provable []
+  (implies (implies (atom P) (atom Q))
+           (implies (not (atom Q)) (not (atom P)))).
+Proof.
+   Admitted.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="keyword">type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">tvar</span> (<span class="id" title="var">id</span> : <span class="id" title="var">string</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">arrow</span> (<span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span> : <span class="id" title="keyword">type</span>).<br/>
+</div>
+
+<div class="doc">
+Next, we model program <i>expressions</i> (aka <i>terms</i>).
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> As usual we have <i>variables</i>.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> A function aka <i>abstraction</i> is like <span class="inlinecode"><span class="id" title="keyword">fun</span></span> <span class="inlinecode">(<span class="id" title="var">x</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">t</span>)</span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" title="var">e</span></span> in Rocq.
+      It binds a variable, explicitly states the type of that variable,
+      and has an expression as its body.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> An <i>application</i> applies a function to an argument, like <span class="inlinecode"><span class="id" title="var">e<sub>1</sub></span></span> <span class="inlinecode"><span class="id" title="var">e<sub>2</sub></span></span> in
+      Rocq.
+
+</li>
+</ul>
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">expr</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">var</span> (<span class="id" title="var">id</span> : <span class="id" title="var">string</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">abs</span> (<span class="id" title="var">id</span> : <span class="id" title="var">string</span>) (<span class="id" title="var">t</span> : <span class="id" title="keyword">type</span>) (<span class="id" title="var">e</span> : <span class="id" title="var">expr</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">app</span> (<span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">e<sub>2</sub></span> : <span class="id" title="var">expr</span>).<br/>
+</div>
+
+<div class="doc">
+Here are some examples of programs. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">e_I</span> : <span class="id" title="var">expr</span> :=<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;fun&nbsp;(x:T)&nbsp;=&gt;&nbsp;x&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">abs</span> "x" (<span class="id" title="var">tvar</span> "T") (<span class="id" title="var">var</span> "x").<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">e_K</span> : <span class="id" title="var">expr</span> :=<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;fun&nbsp;(x:T)&nbsp;(y:U)&nbsp;=&gt;&nbsp;x&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">abs</span> "x" (<span class="id" title="var">tvar</span> "T") (<span class="id" title="var">abs</span> "y" (<span class="id" title="var">tvar</span> "U") (<span class="id" title="var">var</span> "x")).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">e_S</span> : <span class="id" title="var">expr</span> :=<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;fun&nbsp;(x:T<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>U<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>V)&nbsp;(y:T<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>U)&nbsp;(z:T)&nbsp;=&gt;&nbsp;x&nbsp;z&nbsp;(y&nbsp;z)&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">abs</span> "x" (<span class="id" title="var">arrow</span> (<span class="id" title="var">tvar</span> "T") (<span class="id" title="var">arrow</span> (<span class="id" title="var">tvar</span> "U") (<span class="id" title="var">tvar</span> "V")))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">abs</span> "y" (<span class="id" title="var">arrow</span> (<span class="id" title="var">tvar</span> "T") (<span class="id" title="var">tvar</span> "U"))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">abs</span> "z" (<span class="id" title="var">tvar</span> "T")<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">app</span> (<span class="id" title="var">app</span> (<span class="id" title="var">var</span> "x") (<span class="id" title="var">var</span> "z"))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">app</span> (<span class="id" title="var">var</span> "y") (<span class="id" title="var">var</span> "z"))))).<br/>
+</div>
+
+<div class="doc">
+<a id="lab382"></a><h2 class="section">Type Checking</h2>
+
+<div class="paragraph"> </div>
+
+ A <i>type system</i> specifies when programs are well-typed.
+    The typing relation <span class="inlinecode"><span class="id" title="var">E</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" title="var">e</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">t</span></span> means expression <span class="inlinecode"><span class="id" title="var">e</span></span> has type <span class="inlinecode"><span class="id" title="var">t</span></span>
+    under environment <span class="inlinecode"><span class="id" title="var">E</span></span>, which maps variables to types. We write
+    <span class="inlinecode"><span class="id" title="var">E</span>,</span> <span class="inlinecode"><span class="id" title="var">x</span>:<span class="id" title="var">t</span></span> to extend <span class="inlinecode"><span class="id" title="var">E</span></span> with a binding for identifier <span class="inlinecode"><span class="id" title="var">x</span></span> at type <span class="inlinecode"><span class="id" title="var">t</span></span>. 
+<div class="paragraph"> </div>
+
+ The typing relation is defined with the following inference rules:
+
+<div class="paragraph"> </div>
+
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-var) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E, x : t &#x22A2; x : t</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E, x : t<sub>1</sub> &#x22A2; e : t<sub>2</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-abs) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; fun (x : t<sub>1</sub>) => e : t<sub>1</sub> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> t<sub>2</sub></td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; e<sub>1</sub> : t<sub>1</sub> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> t<sub>2</sub>&nbsp;&nbsp;&nbsp;&nbsp;E &#x22A2; e<sub>2</sub> : t<sub>1</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-app) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; e<sub>1</sub> e<sub>2</sub> : t<sub>2</sub></td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ The rules:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> T-Var: a variable has the type assigned to it in the environment.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> T-Abs: to type a function, assume its parameter has a given type
+      and type-check the body.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> T-App: to type a function application, type-check the function
+      and its argument, then use the function's output type. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ As a simple representation of partial maps, we use an <i>association list</i>,
+    that is, a list of pairs, where the first component of the pair is a <i>key</i>
+    and the second component is the value to which that key is bound. For
+    simplicity, we omit any checking to prohibit duplicate keys. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">tenv</span> := <span class="id" title="var">list</span> (<span class="id" title="var">string</span> × <span class="id" title="keyword">type</span>).<br/>
+</div>
+
+<div class="doc">
+The type system inference rules are straightforward to formalize in Rocq. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">hastype</span> : <span class="id" title="var">tenv</span> → <span class="id" title="var">expr</span> → <span class="id" title="keyword">type</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_var</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">x</span> <span class="id" title="var">t</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">In</span> (<span class="id" title="var">x</span>, <span class="id" title="var">t</span>) <span class="id" title="var">E</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="var">var</span> <span class="id" title="var">x</span>) <span class="id" title="var">t</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_abs</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">x</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">e</span> <span class="id" title="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> ((<span class="id" title="var">x</span>, <span class="id" title="var">t<sub>1</sub></span>) :: <span class="id" title="var">E</span>) <span class="id" title="var">e</span> <span class="id" title="var">t<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="var">abs</span> <span class="id" title="var">x</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">e</span>) (<span class="id" title="var">arrow</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_app</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span> <span class="id" title="var">e<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e<sub>1</sub></span> (<span class="id" title="var">arrow</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e<sub>2</sub></span> <span class="id" title="var">t<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="var">app</span> <span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">e<sub>2</sub></span>) <span class="id" title="var">t<sub>2</sub></span>.<br/>
+</div>
+
+<div class="doc">
+The example programs given above are all well-typed. Our <span class="inlinecode"><span class="id" title="var">by_assumption</span></span>
+    tactic continues to work equally well for association lists. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Example</span> <span class="id" title="var">e_I_typable</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="var">hastype</span> [] <span class="id" title="var">e_I</span> (<span class="id" title="var">arrow</span> (<span class="id" title="var">tvar</span> "T") (<span class="id" title="var">tvar</span> "T")).<br/>
+<span class="comment">(*<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;----------------------------&nbsp;(t-var)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;:&nbsp;T&nbsp;&#x22A2;&nbsp;x&nbsp;:&nbsp;T<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;----------------------------&nbsp;(t-abs)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2;&nbsp;fun&nbsp;(x&nbsp;:&nbsp;T)&nbsp;=&gt;&nbsp;x&nbsp;:&nbsp;T&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;T<br/>
+*)</span><br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">e_I</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">t_abs</span>. <span class="id" title="var">by_assumption</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">e_K_typable</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="var">hastype</span> [] <span class="id" title="var">e_K</span> (<span class="id" title="var">arrow</span> (<span class="id" title="var">tvar</span> "T") (<span class="id" title="var">arrow</span> (<span class="id" title="var">tvar</span> "U") (<span class="id" title="var">tvar</span> "T"))).<br/>
+<span class="comment">(*<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;------------------------------------------------&nbsp;(t-var)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;:&nbsp;T,&nbsp;y&nbsp;:&nbsp;U&nbsp;&#x22A2;&nbsp;x&nbsp;:&nbsp;T<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;------------------------------------------------&nbsp;(t-abs)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;:&nbsp;T&nbsp;&#x22A2;&nbsp;fun&nbsp;(y&nbsp;:&nbsp;U)&nbsp;=&gt;&nbsp;x&nbsp;:&nbsp;U&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;T<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;------------------------------------------------&nbsp;(t-abs)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2;&nbsp;fun&nbsp;(x&nbsp;:&nbsp;T)&nbsp;=&gt;&nbsp;fun&nbsp;(y&nbsp;:&nbsp;U)&nbsp;=&gt;&nbsp;x&nbsp;:&nbsp;T&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;U&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;T<br/>
+*)</span><br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;WORK&nbsp;IN&nbsp;CLASS&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab383"></a><h1 class="section">The Correspondence</h1>
+
+<div class="paragraph"> </div>
+
+ Using the formalizations of provability and typability, we can now
+    make the Curry-Howard correspondence precise. 
+</div>
+
+<div class="doc">
+<a id="lab384"></a><h2 class="section">Arrow Elimination</h2>
+
+<div class="paragraph"> </div>
+
+ First, consider the rules that involve eliminating an arrow, whether it's a
+    function type arrow or an implication arrow: 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; e<sub>1</sub> : t<sub>1</sub> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> t<sub>2</sub>&nbsp;&nbsp;&nbsp;&nbsp;E &#x22A2; e<sub>2</sub> : t<sub>1</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-app) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; e<sub>1</sub> e<sub>2</sub> : t<sub>2</sub></td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A &#x22A2; p</td>
+  <td class="infrulenamecol" rowspan="3">
+    (implies elim) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; q</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ Observe what happens if we erase from <span class="inlinecode"><span class="id" title="var">t</span>-<span class="id" title="var">app</span></span> everything between
+    each turnstile <span class="inlinecode">&#x22A2;</span> (exclusive) and colon (inclusive): 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; t<sub>1</sub> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> t<sub>2</sub>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;E &#x22A2; t<sub>1</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-app-erased) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; t<sub>2</sub></td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A &#x22A2; p</td>
+  <td class="infrulenamecol" rowspan="3">
+    (implies elim) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; q</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ Erasing programs from <span class="inlinecode"><span class="id" title="var">t</span>-<span class="id" title="var">app</span></span> yields <span class="inlinecode"><span class="id" title="var">implies</span></span> <span class="inlinecode"><span class="id" title="tactic">elim</span></span>!
+
+<div class="paragraph"> </div>
+
+    Both rules express <i>transformation</i>:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Implication maps proofs of <span class="inlinecode"><span class="id" title="var">p</span></span> to proofs of <span class="inlinecode"><span class="id" title="var">q</span></span>
+
+</li>
+<li> Functions map inputs of type <span class="inlinecode"><span class="id" title="var">t<sub>1</sub></span></span> to outputs of type <span class="inlinecode"><span class="id" title="var">t<sub>2</sub></span></span>.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    The typing rule just adds the code that performs the transformation. 
+</div>
+
+<div class="doc">
+<a id="lab385"></a><h2 class="section">Arrow Introduction</h2>
+
+<div class="paragraph"> </div>
+
+ Second, consider the rules that involve introducing an arrow: 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E, x : t<sub>1</sub> &#x22A2; e : t<sub>2</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-abs) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; fun (x : t<sub>1</sub>) => e : t<sub>1</sub> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> t<sub>2</sub></td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A, p &#x22A2; q</td>
+  <td class="infrulenamecol" rowspan="3">
+    (implies intro) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> q</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ As before, if we erase the programs from <span class="inlinecode"><span class="id" title="var">t</span>-<span class="id" title="var">abs</span></span>, we obtain a rule
+    that looks exactly like <span class="inlinecode"><span class="id" title="var">implies</span></span> <span class="inlinecode"><span class="id" title="var">introduction</span></span>: 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E, t<sub>1</sub> &#x22A2; t<sub>2</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-abs-erased) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; t<sub>1</sub> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> t<sub>2</sub></td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A, p &#x22A2; q</td>
+  <td class="infrulenamecol" rowspan="3">
+    (implies intro) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> q</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+ Both rules create a transformer: implication on proofs, functions on values.
+    The typing rule includes the code that implements the transformation. 
+</div>
+
+<div class="doc">
+<a id="lab386"></a><h2 class="section">Assumptions</h2>
+
+<div class="paragraph"> </div>
+
+ Third and finally, consider the rules that involve assumptions, and the
+    erasure of the typing rule: 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-var) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E, x : t &#x22A2; x : t</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-var-erased) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E, t &#x22A2; t</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (axiom) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A, p &#x22A2; p</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ Again, <span class="inlinecode"><span class="id" title="var">t</span>-<span class="id" title="var">var</span>-<span class="id" title="var">erased</span></span> looks exactly like its logical companion <span class="inlinecode"><span class="id" title="var">axiom</span></span>.
+    The rules are expressing the same basic principle of reasoning "by
+    assumption." 
+</div>
+<div class="quiz">
+
+
+<div class="doc">
+    What proposition does the following program prove?
+    (Assume that T and U are types in scope.)
+
+<div class="paragraph"> </div>
+
+        fun (f : T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U) =&gt; f
+
+<div class="paragraph"> </div>
+
+    (A) T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U
+
+<div class="paragraph"> </div>
+
+    (B) (T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> (T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U)
+
+<div class="paragraph"> </div>
+
+    (C) (T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> T
+
+<div class="paragraph"> </div>
+
+    (D) T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> (T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U)
+
+<div class="paragraph"> </div>
+
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">itproves1</span> := <span class="id" title="keyword">fun</span> (<span class="id" title="var">T</span> <span class="id" title="var">U</span> : <span class="id" title="keyword">Type</span>) ⇒<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> (<span class="id" title="var">f</span> : <span class="id" title="var">T</span> → <span class="id" title="var">U</span>) ⇒ <span class="id" title="var">f</span>.<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">itproves1</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">T</span> <span class="id" title="var">U</span> : <span class="id" title="keyword">Type</span>,<br/>
+&nbsp;&nbsp;(<span class="id" title="var">T</span> → <span class="id" title="var">U</span>) → <span class="id" title="var">T</span> → <span class="id" title="var">U</span>.<br/>
+</div></div>
+<div class="quiz solution">
+<div class="doc"><b>Solution</b>
+</div>
+<div class="code">
+Definition itproves1 := fun (T U : Type) =&gt;<br/>
+&nbsp;&nbsp;fun (f : T -&gt; U) =&gt; f.<br/>
+Check itproves1 : forall T U : Type,<br/>
+&nbsp;&nbsp;(T -&gt; U) -&gt; T -&gt; U.<br/>
+</div></div>
+ <!-- /quiz -->
+<div class="quiz">
+
+
+<div class="doc">
+    What proposition does the following program prove?
+
+<div class="paragraph"> </div>
+
+        fun (f : T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U) =&gt;
+        fun (x : T) =&gt;
+          f x
+
+<div class="paragraph"> </div>
+
+    A. T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U
+    B. (T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U
+    C. (T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U
+    D. T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> (T <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> U)
+
+<div class="paragraph"> </div>
+
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">itproves2</span> := <span class="id" title="keyword">fun</span> (<span class="id" title="var">T</span> <span class="id" title="var">U</span> : <span class="id" title="keyword">Type</span>) ⇒<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> (<span class="id" title="var">f</span> : <span class="id" title="var">T</span> → <span class="id" title="var">U</span>) ⇒ <span class="id" title="keyword">fun</span> (<span class="id" title="var">x</span> : <span class="id" title="var">T</span>) ⇒ <span class="id" title="var">f</span> <span class="id" title="var">x</span>.<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">itproves2</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">T</span> <span class="id" title="var">U</span> : <span class="id" title="keyword">Type</span>,<br/>
+&nbsp;&nbsp;(<span class="id" title="var">T</span> → <span class="id" title="var">U</span>) → <span class="id" title="var">T</span> → <span class="id" title="var">U</span>.<br/>
+</div></div>
+<div class="quiz solution">
+<div class="doc"><b>Solution</b>
+</div>
+<div class="code">
+Definition itproves2 := fun (T U : Type) =&gt;<br/>
+&nbsp;&nbsp;fun (f : T -&gt; U) =&gt; fun (x : T) =&gt; f x.<br/>
+Check itproves2 : forall T U : Type,<br/>
+&nbsp;&nbsp;(T -&gt; U) -&gt; T -&gt; U.<br/>
+</div></div>
+ <!-- /quiz -->
+
+<div class="doc">
+<a id="lab387"></a><h2 class="section">Proving the Correspondence</h2>
+
+<div class="paragraph"> </div>
+
+ We saw above that by erasing programs from typability rules, we are
+    left essentially with provability rules. Thus, any derivation of
+    the type of a program also establishes a derivation of the provability
+    of a corresponding proposition. 
+<div class="paragraph"> </div>
+
+ For example, here is a derivation of the type <span class="inlinecode"><span class="id" title="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode">(<span class="id" title="var">Y</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">X</span>)</span> of a program:
+
+<div class="paragraph"> </div>
+
+<pre>
+        ------------------------------------------------- (t-var)
+                         x:X, y:Y &#x22A2; x : X
+        ------------------------------------------------- (t-abs)
+                  x:X &#x22A2; fun (y:Y) =&gt; x : Y <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> X
+        ------------------------------------------------- (t-abs)
+        &#x22A2; fun (x:X) =&gt; (fun (y:Y) =&gt; x)) : X <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> (Y <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> X)
+</pre>
+
+<div class="paragraph"> </div>
+
+And by erasing the code from that derivation we are left with a derivation
+of the provability of <span class="inlinecode"><span class="id" title="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode">(<span class="id" title="var">Y</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">X</span>)</span>:
+
+<div class="paragraph"> </div>
+
+<pre>
+        ---------------- (axiom)
+            X, Y &#x22A2; X
+        ---------------- (implies introduction)
+          X &#x22A2; Y <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> X
+        ---------------- (implies introduction)
+        &#x22A2; X <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> (Y <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> X)
+</pre>
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ Therefore, our logical proof system rules are in a correspondence with our
+    type system rules:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" title="var">axiom</span></span> corresponds to <span class="inlinecode"><span class="id" title="var">t_var</span></span>.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">implies_intro</span></span> corresponds to <span class="inlinecode"><span class="id" title="var">t_abs</span></span>.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">implies_elim</span></span> corresponds to <span class="inlinecode"><span class="id" title="var">t_app</span></span>.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    And therefore there is a correspondence between logical connectives and
+    programming language features:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <i>Propositional variables</i> correspond to <i>program variables</i>.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> <i>Implication</i> corresponds to <i>functions and application</i>.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    
+<div class="paragraph"> </div>
+
+ There is a small mismatch, however, between our data structures for
+    types and propositions. We can use the following function to
+    convert a type to a proposition: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Theorem e_S_typable :
+  hastype [] e_S
+    (arrow (arrow (tvar &quot;T&quot;) (arrow (tvar &quot;U&quot;) (tvar &quot;V&quot;)))
+           (arrow (arrow (tvar &quot;T&quot;) (tvar &quot;U&quot;))
+                  (arrow (tvar &quot;T&quot;) (tvar &quot;V&quot;)))).
+Proof.
+   Admitted.
+
+Definition prog_B :=
+  (abs &quot;g&quot; (arrow (tvar &quot;Y&quot;) (tvar &quot;Z&quot;))
+    (abs &quot;f&quot; (arrow (tvar &quot;X&quot;) (tvar &quot;Y&quot;))
+      (abs &quot;x&quot; (tvar &quot;X&quot;)
+        (app (var &quot;g&quot;) (app (var &quot;f&quot;) (var &quot;x&quot;)))))).
+
+Theorem prog_B_typable : exists (T : type),
+  hastype [] prog_B T.
+Proof.
+   Admitted.
+
+Definition prog_C :=
+  (abs &quot;f&quot; (arrow (tvar &quot;X&quot;) (arrow (tvar &quot;Y&quot;) (tvar &quot;Z&quot; )))
+    (abs &quot;y&quot; (tvar &quot;Y&quot;)
+      (abs &quot;x&quot; (tvar &quot;X&quot;)
+        (app (app (var &quot;f&quot;) (var &quot;x&quot;)) (var &quot;y&quot;))))).
+
+Theorem prog_C_typable : exists (T : type),
+  hastype [] prog_C T.
+Proof.
+   Admitted.
+
+Definition prog_W_type :=
+  arrow (arrow (tvar &quot;X&quot;) (arrow (tvar &quot;X&quot;) (tvar &quot;Y&quot;)))
+        (arrow (tvar &quot;X&quot;) (tvar &quot;Y&quot;)).
+
+Theorem prog_W_typable : exists (e : expr),
+  hastype [] e prog_W_type.
+Proof.
+   Admitted.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">proposition_of_type</span> (<span class="id" title="var">t</span> : <span class="id" title="keyword">type</span>) : <span class="id" title="var">proposition</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">tvar</span> <span class="id" title="var">x</span> ⇒ <span class="id" title="var">atom</span> <span class="id" title="var">x</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">arrow</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">implies</span> (<span class="id" title="var">proposition_of_type</span> <span class="id" title="var">t<sub>1</sub></span>) (<span class="id" title="var">proposition_of_type</span> <span class="id" title="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">pot_XY</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="var">proposition_of_type</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">arrow</span> (<span class="id" title="var">tvar</span> "X") (<span class="id" title="var">arrow</span> (<span class="id" title="var">tvar</span> "Y") (<span class="id" title="var">tvar</span> "X")))<br/>
+&nbsp;&nbsp;=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">implies</span> (<span class="id" title="var">atom</span> "X") (<span class="id" title="var">implies</span> (<span class="id" title="var">atom</span> "Y") (<span class="id" title="var">atom</span> "X"))).<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+With the help of that function, we can convert a type environment into a
+    list of assumptions: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">assumptions_of_tenv</span> (<span class="id" title="var">E</span> : <span class="id" title="var">tenv</span>) : <span class="id" title="var">list</span> <span class="id" title="var">proposition</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">map</span> <span class="id" title="var">proposition_of_type</span> (<span class="id" title="var">map</span> <span class="id" title="var">snd</span> <span class="id" title="var">E</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">aot_XY</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="var">assumptions_of_tenv</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[("x"%<span class="id" title="var">string</span>, <span class="id" title="var">tvar</span> "X"); ("y"%<span class="id" title="var">string</span>, <span class="id" title="var">tvar</span> "Y")]<br/>
+&nbsp;&nbsp;=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" title="var">atom</span> "X"; <span class="id" title="var">atom</span> "Y"].<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab388"></a><h4 class="section">Exercise: 3 stars, standard (curry_howard)</h4>
+
+<div class="paragraph"> </div>
+
+ Derivation of typability for a program also yields a derivation of
+    provability for a proposition.
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Lemma in_snd : forall (X Y Z : Type) (x : X) (y : Y) (f : Y -&gt; Z) (l : list (X*Y)),
+  In (x, y) l -&gt; In (f y) (map f (map snd l)).
+Proof.  Admitted.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">curry_howard</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">t</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">t</span> →<br/>
+&nbsp;&nbsp;<span class="id" title="var">provable</span> (<span class="id" title="var">assumptions_of_tenv</span> <span class="id" title="var">E</span>) (<span class="id" title="var">proposition_of_type</span> <span class="id" title="var">t</span>).<br/>
+<span class="id" title="keyword">Proof</span>. <span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
+</div>
+
+<div class="code">
+
+<span class="id" title="keyword">End</span> <span class="id" title="var">Implicational</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab389"></a><h1 class="section">Extending the Correspondence to Larger Systems</h1>
+
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Module</span> <span class="id" title="var">Propositional</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab390"></a><h2 class="section">Logic: Adding Conjunction and Disjunction</h2>
+
+<div class="paragraph"> </div>
+
+ Now we extend the development to a full propositional logic with conjunction
+    and disjunction. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">proposition</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">atom</span> (<span class="id" title="var">id</span> : <span class="id" title="var">string</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">implies</span> (<span class="id" title="var">p</span> <span class="id" title="var">q</span> : <span class="id" title="var">proposition</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">and</span> (<span class="id" title="var">p</span> <span class="id" title="var">q</span> : <span class="id" title="var">proposition</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">or</span> (<span class="id" title="var">p</span> <span class="id" title="var">q</span> : <span class="id" title="var">proposition</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">false</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">not</span> (<span class="id" title="var">f</span> : <span class="id" title="var">proposition</span>) : <span class="id" title="var">proposition</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">implies</span> <span class="id" title="var">f</span> <span class="id" title="var">false</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">true</span> : <span class="id" title="var">proposition</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">implies</span> <span class="id" title="var">false</span> <span class="id" title="var">false</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">iff</span> (<span class="id" title="var">p</span> <span class="id" title="var">q</span> : <span class="id" title="var">proposition</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">and</span> (<span class="id" title="var">implies</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>) (<span class="id" title="var">implies</span> <span class="id" title="var">q</span> <span class="id" title="var">p</span>).<br/>
+</div>
+
+<div class="doc">
+The new proof system rules are as follows: 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p&nbsp;&nbsp;&nbsp;A &#x22A2; q</td>
+  <td class="infrulenamecol" rowspan="3">
+    (and intro) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p /\ q</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p /\ q</td>
+  <td class="infrulenamecol" rowspan="3">
+    (and elim L) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p /\ q</td>
+  <td class="infrulenamecol" rowspan="3">
+    (and elim R) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; q</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p</td>
+  <td class="infrulenamecol" rowspan="3">
+    (or intro L) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p \/ q</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; q</td>
+  <td class="infrulenamecol" rowspan="3">
+    (or intro R) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; p \/ q</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">A, p &#x22A2; r&nbsp;&nbsp;&nbsp;&nbsp;A, q &#x22A2; r&nbsp;&nbsp;&nbsp;&nbsp;A &#x22A2; p \/ q</td>
+  <td class="infrulenamecol" rowspan="3">
+    (or elim) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">A &#x22A2; r</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ The rules:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> And intro: to prove a conjunction, prove both parts.
+
+</li>
+<li> And elim L: from a conjunction, obtain its first component.
+
+</li>
+<li> And elim R: from a conjunction, obtain its second component.
+
+</li>
+<li> Or intro L: to prove a disjunction, prove the left part.
+
+</li>
+<li> Or intro R: to prove a disjunction, prove the right part.
+
+</li>
+<li> Or elim: to use a disjunction, consider both cases and show a
+      common conclusion follows. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ We formalize those as follows. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">provable</span> : <span class="id" title="var">list</span> <span class="id" title="var">proposition</span> → <span class="id" title="var">proposition</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;The&nbsp;first&nbsp;four&nbsp;rules&nbsp;were&nbsp;part&nbsp;of&nbsp;our&nbsp;previous&nbsp;development.&nbsp;*)</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">axiom</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">In</span> <span class="id" title="var">p</span> <span class="id" title="var">A</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">implies_intro</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> (<span class="id" title="var">p</span> :: <span class="id" title="var">A</span>) <span class="id" title="var">q</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> (<span class="id" title="var">implies</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">implies_elim</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> (<span class="id" title="var">implies</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">q</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">false_elim</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">false</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;The&nbsp;next&nbsp;six&nbsp;rules&nbsp;are&nbsp;new.&nbsp;*)</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">and_intro</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">q</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> (<span class="id" title="var">and</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">and_elim_L</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> (<span class="id" title="var">and</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">and_elim_R</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> (<span class="id" title="var">and</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">q</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">or_intro_L</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> (<span class="id" title="var">or</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">or_intro_R</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">q</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> (<span class="id" title="var">or</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">or_elim</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span> <span class="id" title="var">r</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> (<span class="id" title="var">p</span> :: <span class="id" title="var">A</span>) <span class="id" title="var">r</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> (<span class="id" title="var">q</span> :: <span class="id" title="var">A</span>) <span class="id" title="var">r</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> (<span class="id" title="var">or</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">r</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab391"></a><h2 class="section">Programs: Adding Products, Sums, and the Empty Type</h2>
+
+<div class="paragraph"> </div>
+
+ We extend the language with pairs, variants, and the empty type.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <i>Pairs</i> combine two values; their type is a product <span class="inlinecode"><span class="id" title="var">t<sub>1</sub></span></span> <span class="inlinecode">×</span> <span class="inlinecode"><span class="id" title="var">t<sub>2</sub></span></span>. Projections
+      <span class="inlinecode"><span class="id" title="var">fst</span></span> and <span class="inlinecode"><span class="id" title="var">snd</span></span> extract components.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> <i>Variants</i> represent a value of one of two types, written <span class="inlinecode"><span class="id" title="var">t<sub>1</sub></span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">t<sub>2</sub></span></span>,
+      like this Rocq type:
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+<pre>
+        Inductive sum (T<sub>1</sub> T<sub>2</sub> : Type) :=
+        | inl : T<sub>1</sub> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> sum T<sub>1</sub> T<sub>2</sub>
+        | inr : T<sub>2</sub> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> sum T<sub>1</sub> T<sub>2</sub>.
+</pre>
+
+<div class="paragraph"> </div>
+
+      A <span class="inlinecode"><span class="id" title="tactic">case</span></span> expression (like Rocq's <span class="inlinecode"><span class="id" title="keyword">match</span></span>) analyzes them:
+
+<div class="paragraph"> </div>
+
+<pre>
+        case e of (x<sub>1</sub> : t<sub>1</sub>) =&gt; e<sub>1</sub> | (x<sub>2</sub> : t<sub>2</sub>) =&gt; e<sub>2</sub> end
+</pre>
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> The <i>empty type</i> has no values and corresponds to <span class="inlinecode"><span class="id" title="var">false</span></span>. The expression
+      <span class="inlinecode"><span class="id" title="var">magic</span></span> <span class="inlinecode"><span class="id" title="var">t</span></span> <span class="inlinecode"><span class="id" title="var">e</span></span> "magically" produces a value of type <span class="inlinecode"><span class="id" title="var">t</span></span> from <span class="inlinecode"><span class="id" title="var">e</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">empty</span></span>.
+      It is like an empty <span class="inlinecode"><span class="id" title="keyword">match</span></span> expression in Rocq. 
+
+</li>
+</ul>
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Ltac by_assumption :=
+  constructor;
+  repeat match goal with
+  | |- In ?p (?h :: ?t) =&gt; simpl
+  | |- (?x = ?y) \/ ?p =&gt; first [left; reflexivity | right]
+  | |- False =&gt; idtac &quot;by_assumption failed: not in assumptions&quot;; fail
+  end.
+
+Theorem false_iff_inconsistency : forall (p : proposition),
+  provable [] (iff false (and p (not p))).
+Proof.
+   Admitted.
+
+Theorem and_comm : forall (p q : proposition),
+  provable [] (iff (and p q) (and q p)).
+Proof.
+   Admitted.
+
+Theorem or_comm : forall (p q : proposition),
+  provable [] (iff (or p q) (or q p)).
+Proof.
+   Admitted.
+
+Theorem and_distr_or : forall (p q r : proposition),
+  provable [] (iff (and p (or q r)) (or (and p q) (and p r))).
+Proof.
+   Admitted.
+
+Theorem or_distr_and : forall (p q r : proposition),
+  provable [] (iff (or p (and q r)) (and (or p q) (or p r))).
+Proof.
+   Admitted.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="keyword">type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">tvar</span> (<span class="id" title="var">id</span> : <span class="id" title="var">string</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">arrow</span> (<span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span> : <span class="id" title="keyword">type</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">product</span> (<span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span> : <span class="id" title="keyword">type</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">sum</span> (<span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span> : <span class="id" title="keyword">type</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">empty</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">expr</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">var</span> (<span class="id" title="var">id</span> : <span class="id" title="var">string</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">abs</span> (<span class="id" title="var">id</span> : <span class="id" title="var">string</span>) (<span class="id" title="var">t</span> : <span class="id" title="keyword">type</span>) (<span class="id" title="var">e</span> : <span class="id" title="var">expr</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">app</span> (<span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">e<sub>2</sub></span> : <span class="id" title="var">expr</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">magic</span> (<span class="id" title="var">t</span> : <span class="id" title="keyword">type</span>) (<span class="id" title="var">e</span> : <span class="id" title="var">expr</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">pair</span> (<span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">e<sub>2</sub></span> : <span class="id" title="var">expr</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">fst</span> (<span class="id" title="var">e</span> : <span class="id" title="var">expr</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">snd</span> (<span class="id" title="var">e</span> : <span class="id" title="var">expr</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">inl</span> (<span class="id" title="var">e<sub>1</sub></span> : <span class="id" title="var">expr</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">inr</span> (<span class="id" title="var">e<sub>2</sub></span> : <span class="id" title="var">expr</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="tactic">case</span> (<span class="id" title="var">e</span> : <span class="id" title="var">expr</span>) (<span class="id" title="var">id<sub>1</sub></span> : <span class="id" title="var">string</span>) (<span class="id" title="var">t<sub>1</sub></span> : <span class="id" title="keyword">type</span>) (<span class="id" title="var">e<sub>1</sub></span> : <span class="id" title="var">expr</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">id<sub>2</sub></span> : <span class="id" title="var">string</span>) (<span class="id" title="var">t<sub>2</sub></span> : <span class="id" title="keyword">type</span>) (<span class="id" title="var">e<sub>2</sub></span> : <span class="id" title="var">expr</span>).<br/>
+</div>
+
+<div class="doc">
+The new type system rules are as follows: 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; e : empty</td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-magic) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; magic t e : t</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; e<sub>1</sub> : t<sub>1</sub>&nbsp;&nbsp;&nbsp;&nbsp;E &#x22A2; e<sub>2</sub> : t<sub>2</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-pair) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; pair e<sub>1</sub> e<sub>2</sub> : t<sub>1</sub> * t<sub>2</sub></td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; e : t<sub>1</sub> * t<sub>2</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-fst) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; fst e : t<sub>1</sub></td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; e : t<sub>1</sub> * t<sub>2</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-snd) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; snd e : t<sub>2</sub></td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; e : t<sub>1</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-inl) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; inl e : t<sub>1</sub> + t<sub>2</sub></td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; e : t<sub>2</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-inr) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; inr e : t<sub>1</sub> + t<sub>2</sub></td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; e : t<sub>1</sub> + t<sub>2</sub>&nbsp;&nbsp;&nbsp;E, x<sub>1</sub>:t<sub>1</sub> &#x22A2; e<sub>1</sub> : t&nbsp;&nbsp;&nbsp;E, x<sub>2</sub>:t<sub>2</sub> &#x22A2; e<sub>2</sub> : t</td>
+  <td class="infrulenamecol" rowspan="3">
+    (t-case) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">E &#x22A2; case e of (x<sub>1</sub> : t<sub>1</sub>) => e<sub>1</sub> | (x<sub>2</sub> : t<sub>2</sub>) => e<sub>2</sub> end : t</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ The rules:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> T-Magic: from an impossible value, produce a value of any type.
+
+</li>
+<li> T-Pair: combine two values into a pair.
+
+</li>
+<li> T-Fst: from a pair, obtain its first component.
+
+</li>
+<li> T-Snd: from a pair, obtain its second component.
+
+</li>
+<li> T-Inl: inject a value into the left side of a sum.
+
+</li>
+<li> T-Inr: inject a value into the right side of a sum.
+
+</li>
+<li> T-Case: to use a sum, consider both cases and produce the same type. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ We formalize those as follows. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">tenv</span> := <span class="id" title="var">list</span> (<span class="id" title="var">string</span> × <span class="id" title="keyword">type</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">hastype</span> : <span class="id" title="var">tenv</span> → <span class="id" title="var">expr</span> → <span class="id" title="keyword">type</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;The&nbsp;first&nbsp;three&nbsp;rules&nbsp;were&nbsp;part&nbsp;of&nbsp;our&nbsp;previous&nbsp;development.&nbsp;*)</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_var</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">x</span> <span class="id" title="var">t</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">In</span> (<span class="id" title="var">x</span>, <span class="id" title="var">t</span>) <span class="id" title="var">E</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="var">var</span> <span class="id" title="var">x</span>) <span class="id" title="var">t</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_abs</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">x</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">e</span> <span class="id" title="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> ((<span class="id" title="var">x</span>, <span class="id" title="var">t<sub>1</sub></span>) :: <span class="id" title="var">E</span>) <span class="id" title="var">e</span> <span class="id" title="var">t<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="var">abs</span> <span class="id" title="var">x</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">e</span>) (<span class="id" title="var">arrow</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_app</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span> <span class="id" title="var">e<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e<sub>1</sub></span> (<span class="id" title="var">arrow</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e<sub>2</sub></span> <span class="id" title="var">t<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="var">app</span> <span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">e<sub>2</sub></span>) <span class="id" title="var">t<sub>2</sub></span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;The&nbsp;next&nbsp;seven&nbsp;rules&nbsp;are&nbsp;new.&nbsp;*)</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_magic</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">t</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">empty</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="var">magic</span> <span class="id" title="var">t</span> <span class="id" title="var">e</span>) <span class="id" title="var">t</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_pair</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">e<sub>2</sub></span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">t<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e<sub>2</sub></span> <span class="id" title="var">t<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="var">pair</span> <span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">e<sub>2</sub></span>) (<span class="id" title="var">product</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_fst</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> (<span class="id" title="var">product</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="var">fst</span> <span class="id" title="var">e</span>) <span class="id" title="var">t<sub>1</sub></span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_snd</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> (<span class="id" title="var">product</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="var">snd</span> <span class="id" title="var">e</span>) <span class="id" title="var">t<sub>2</sub></span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_inl</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">t<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="var">inl</span> <span class="id" title="var">e</span>) (<span class="id" title="var">sum</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_inr</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">t<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="var">inr</span> <span class="id" title="var">e</span>) (<span class="id" title="var">sum</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_case</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">x<sub>1</sub></span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">x<sub>2</sub></span> <span class="id" title="var">t<sub>2</sub></span> <span class="id" title="var">e<sub>2</sub></span> <span class="id" title="var">t</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> (<span class="id" title="var">sum</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> ((<span class="id" title="var">x<sub>1</sub></span>, <span class="id" title="var">t<sub>1</sub></span>) :: <span class="id" title="var">E</span>) <span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">t</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> ((<span class="id" title="var">x<sub>2</sub></span>, <span class="id" title="var">t<sub>2</sub></span>) :: <span class="id" title="var">E</span>) <span class="id" title="var">e<sub>2</sub></span> <span class="id" title="var">t</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> (<span class="id" title="tactic">case</span> <span class="id" title="var">e</span> <span class="id" title="var">x<sub>1</sub></span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">e<sub>1</sub></span> <span class="id" title="var">x<sub>2</sub></span> <span class="id" title="var">t<sub>2</sub></span> <span class="id" title="var">e<sub>2</sub></span>) <span class="id" title="var">t</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab392"></a><h2 class="section">Proving the Extended Correspondence</h2>
+
+<div class="paragraph"> </div>
+
+ The new rules we've added are also in a correspondence:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" title="var">false_elim</span></span> corresponds to <span class="inlinecode"><span class="id" title="var">t_magic</span></span>.
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">and_intro</span></span> corresponds to <span class="inlinecode"><span class="id" title="var">t_pair</span></span>.
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">and_elim_L</span></span> corresponds to <span class="inlinecode"><span class="id" title="var">t_fst</span></span>.
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">and_elim_R</span></span> corresponds to <span class="inlinecode"><span class="id" title="var">t_snd</span></span>.
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">or_intro_L</span></span> corresponds to <span class="inlinecode"><span class="id" title="var">t_inl</span></span>.
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">or_intro_R</span></span> corresponds to <span class="inlinecode"><span class="id" title="var">t_inr</span></span>.
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">or_elim</span></span> corresponds to <span class="inlinecode"><span class="id" title="var">t_case</span></span>.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    And therefore there is an extended correspondence between logical connectives
+    and programming language features:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> (<i>Propositional variables</i> correspond to <i>program variables</i>.)
+
+</li>
+<li> (<i>Implication</i> corresponds to <i>functions and application</i>.)
+
+</li>
+<li> <i>False</i> corresponds to the <i>empty type</i>.
+
+</li>
+<li> <i>Conjunction</i> corresponds to <i>pairs</i>.
+
+</li>
+<li> <i>Disjunction</i> corresponds to <i>variants</i>.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    
+<div class="paragraph"> </div>
+
+ Now we can re-prove the first of the two main Curry-Howard theorems for our
+    extended logic and programming language. First, we extend our conversion
+    function to change products to conjunctions, and sums to disjunctions. 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Theorem swap_product :
+  forall (t1 t2 : type), exists (e : expr),
+    hastype [] e (arrow (product t1 t2) (product t2 t1)).
+Proof.
+   Admitted.
+
+Theorem swap_sum :
+  forall (t1 t2 : type), exists (e : expr),
+    hastype [] e (arrow (sum t1 t2) (sum t2 t1)).
+Proof.
+   Admitted.
+
+Theorem product_of_sum__sum_of_product :
+  forall (t1 t2 t3 : type), exists (e : expr),
+    hastype [] e (arrow (product t1 (sum t2 t3))
+                        (sum (product t1 t2) (product t1 t3))).
+Proof.  Admitted.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">proposition_of_type</span> (<span class="id" title="var">t</span> : <span class="id" title="keyword">type</span>) : <span class="id" title="var">proposition</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">tvar</span> <span class="id" title="var">x</span> ⇒ <span class="id" title="var">atom</span> <span class="id" title="var">x</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">arrow</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">implies</span> (<span class="id" title="var">proposition_of_type</span> <span class="id" title="var">t<sub>1</sub></span>) (<span class="id" title="var">proposition_of_type</span> <span class="id" title="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">product</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">and</span> (<span class="id" title="var">proposition_of_type</span> <span class="id" title="var">t<sub>1</sub></span>) (<span class="id" title="var">proposition_of_type</span> <span class="id" title="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">sum</span> <span class="id" title="var">t<sub>1</sub></span> <span class="id" title="var">t<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">or</span> (<span class="id" title="var">proposition_of_type</span> <span class="id" title="var">t<sub>1</sub></span>) (<span class="id" title="var">proposition_of_type</span> <span class="id" title="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">empty</span> ⇒ <span class="id" title="var">false</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">assumptions_of_tenv</span> (<span class="id" title="var">E</span> : <span class="id" title="var">tenv</span>) : <span class="id" title="var">list</span> <span class="id" title="var">proposition</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">map</span> <span class="id" title="var">proposition_of_type</span> (<span class="id" title="var">map</span> <span class="id" title="var">Datatypes.snd</span> <span class="id" title="var">E</span>).<br/>
+</div>
+
+<div class="doc">
+<a id="lab393"></a><h4 class="section">Exercise: 3 stars, standard (curry_howard_extended)</h4>
+
+<div class="paragraph"> </div>
+
+ Derivation of typability for a program still yields a derivation of
+    provability for a proposition. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">curry_howard_extended</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">t</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">hastype</span> <span class="id" title="var">E</span> <span class="id" title="var">e</span> <span class="id" title="var">t</span> →<br/>
+&nbsp;&nbsp;<span class="id" title="var">provable</span> (<span class="id" title="var">assumptions_of_tenv</span> <span class="id" title="var">E</span>) (<span class="id" title="var">proposition_of_type</span> <span class="id" title="var">t</span>).<br/>
+<span class="id" title="keyword">Proof</span>. <span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
+</div>
+
+
+<div class="doc">
+<a id="lab394"></a><h1 class="section">The Second Main Theorem of the Correspondence (Advanced)</h1>
+
+<div class="paragraph"> </div>
+
+ So far: if a program is well-typed, its type-as-a-proposition is
+    provable.
+
+<div class="paragraph"> </div>
+
+    Conversely: if a proposition is provable, there exists a well-typed
+    program of that proposition-as-a-type.
+
+<div class="paragraph"> </div>
+
+    The forward direction erases programs; the converse must synthesize them. 
+<div class="paragraph"> </div>
+
+ First, we define a function that converts a proposition to a string
+    representation. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">string_of_proposition</span> (<span class="id" title="var">p</span> : <span class="id" title="var">proposition</span>) : <span class="id" title="var">string</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">p</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">atom</span> <span class="id" title="var">id</span> ⇒ "(" ++ <span class="id" title="var">id</span> ++ ")"<br/>
+&nbsp;&nbsp;| <span class="id" title="var">implies</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"(implies " ++ (<span class="id" title="var">string_of_proposition</span> <span class="id" title="var">p</span>) ++ " "<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" title="var">string_of_proposition</span> <span class="id" title="var">q</span>) ++ ")"<br/>
+&nbsp;&nbsp;| <span class="id" title="var">and</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"(and " ++ (<span class="id" title="var">string_of_proposition</span> <span class="id" title="var">p</span>) ++ " "<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" title="var">string_of_proposition</span> <span class="id" title="var">q</span>) ++ ")"<br/>
+&nbsp;&nbsp;| <span class="id" title="var">or</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"(or " ++ (<span class="id" title="var">string_of_proposition</span> <span class="id" title="var">p</span>) ++ " "<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" title="var">string_of_proposition</span> <span class="id" title="var">q</span>) ++ ")"<br/>
+&nbsp;&nbsp;| <span class="id" title="var">false</span> ⇒ "(false)"<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Second, we define a function that converts a proposition to
+    its equivalent type. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">type_of_proposition</span> (<span class="id" title="var">p</span> : <span class="id" title="var">proposition</span>) : <span class="id" title="keyword">type</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">p</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">atom</span> <span class="id" title="var">id</span> ⇒ <span class="id" title="var">tvar</span> <span class="id" title="var">id</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">implies</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span> ⇒ <span class="id" title="var">arrow</span> (<span class="id" title="var">type_of_proposition</span> <span class="id" title="var">p</span>) (<span class="id" title="var">type_of_proposition</span> <span class="id" title="var">q</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">and</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span> ⇒ <span class="id" title="var">product</span> (<span class="id" title="var">type_of_proposition</span> <span class="id" title="var">p</span>) (<span class="id" title="var">type_of_proposition</span> <span class="id" title="var">q</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">or</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span> ⇒ <span class="id" title="var">sum</span> (<span class="id" title="var">type_of_proposition</span> <span class="id" title="var">p</span>) (<span class="id" title="var">type_of_proposition</span> <span class="id" title="var">q</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">false</span> ⇒ <span class="id" title="var">empty</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Third, we define a function to convert assumptions to a type
+    environment. Each assumption gets a name, which is its conversion
+    to a string. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">tenv_of_assumptions</span> (<span class="id" title="var">A</span> : <span class="id" title="var">list</span> <span class="id" title="var">proposition</span>) : <span class="id" title="var">tenv</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">map</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">p</span> ⇒ (<span class="id" title="var">string_of_proposition</span> <span class="id" title="var">p</span>, <span class="id" title="var">type_of_proposition</span> <span class="id" title="var">p</span>)) <span class="id" title="var">A</span>.<br/>
+</div>
+
+<div class="doc">
+Now we're ready for the second of the main Curry-Howard theorems. 
+<div class="paragraph"> </div>
+
+<a id="lab395"></a><h4 class="section">Exercise: 4 stars, advanced (curry_howard_converse)</h4>
+
+<div class="paragraph"> </div>
+
+ Prove that if a proposition is provable, then there is a well-typed
+    program whose type corresponds to that proposition. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">curry_howard_converse</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">provable</span> <span class="id" title="var">A</span> <span class="id" title="var">p</span> →<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">∃</span> <span class="id" title="var">e</span>, <span class="id" title="var">hastype</span> (<span class="id" title="var">tenv_of_assumptions</span> <span class="id" title="var">A</span>) <span class="id" title="var">e</span> (<span class="id" title="var">type_of_proposition</span> <span class="id" title="var">p</span>).<br/>
+<span class="id" title="keyword">Proof</span>. <span class="comment">(*&nbsp;FILL&nbsp;IN&nbsp;HERE&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
+</div>
+
+<div class="code">
+
+<span class="id" title="keyword">End</span> <span class="id" title="var">Propositional</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab396"></a><h1 class="section">Further Extensions</h1>
+
+<div class="paragraph"> </div>
+
+ The Curry–Howard correspondence extends far beyond this chapter.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Classical axioms ↔ control flow (e.g., exceptions)
+
+</li>
+<li> Universal quantification ↔ dependent types
+
+</li>
+<li> Existential quantification ↔ abstract types
+
+</li>
+<li> Second-order quantification ↔ polymorphism
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    These ideas underlie modern type systems, proof assistants, and
+    program verification. 
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

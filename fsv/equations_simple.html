@@ -1,0 +1,803 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>equations_simple</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library equations_simple</h1>
+
+<div class="code">
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" title="keyword">Equations</span></span> is a plugin for  that comes with a few support modules defining
+   classes and tactics for running it. We will introduce its main
+   features through a handful of examples. We start our Coq primer
+   session by importing the <span class="inlinecode"><span class="id" title="keyword">Equations</span></span> module.  
+<div class="paragraph"> </div>
+
+ Coq uses tactics to define terms/programs.
+    Haskell allows one to define functions by equations.
+    The same style is used in Agda and Idris implementations of type theory
+    Equations introduces the same style in Coq.
+   
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Arith.Arith.html#"><span class="id" title="library">Arith</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.micromega.Lia.html#"><span class="id" title="library">Lia</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Program.Program.html#"><span class="id" title="library">Program</span></a>.<br/>
+<span class="id" title="keyword">From</span> <span class="id" title="keyword">Equations</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">Equations</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Bool.Bvector.html#"><span class="id" title="library">Bvector</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab1"></a><h1 class="section">Inductive types</h1>
+
+
+<div class="paragraph"> </div>
+
+   In its simplest form, <span class="inlinecode"><span class="id" title="keyword">Equations</span></span> allows to define functions on inductive datatypes.
+   Take for example the booleans defined as an inductive type with two constructors
+   <span class="inlinecode"><span class="id" title="var">true</span></span> and <span class="inlinecode"><span class="id" title="var">false</span></span>:
+   <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="var">bool</span> : <span class="id" title="keyword">Set</span> := <span class="id" title="var">true</span> : <span class="id" title="var">bool</span> | <span class="id" title="var">false</span> : <span class="id" title="var">bool</span>
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   We can define the boolean negation as follows: 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Equations</span> <a id="neg" class="idref" href="#neg"><span class="id" title="definition">neg</span></a> (<a id="b:1" class="idref" href="#b:1"><span class="id" title="binder">b</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+<a class="idref" href="equations_simple.html#neg:3"><span class="id" title="definition">neg</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a> ;<br/>
+<a class="idref" href="equations_simple.html#neg:4"><span class="id" title="definition">neg</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+New concise syntax 
+</div>
+<div class="code">
+<span class="id" title="keyword">Equations</span> <a id="neg'" class="idref" href="#neg'"><span class="id" title="definition">neg'</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+| <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a><br/>
+| <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a> =&gt; <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" title="keyword">Equations</span></span> declarations are formed by a signature definition and a set of <i>clauses</i> 
+   that must form a <i>covering</i> of this signature. The compiler is then expected to
+   automatically find a corresponding case-splitting tree that implements the function.
+   In this case, it simply needs to split on the single variable <span class="inlinecode"><span class="id" title="var">b</span></span> to
+   produce two new <i>programming problems</i> <span class="inlinecode"><span class="id" title="var">neg</span></span> <span class="inlinecode"><span class="id" title="var">true</span></span> and <span class="inlinecode"><span class="id" title="var">neg</span></span> <span class="inlinecode"><span class="id" title="var">false</span></span> that are directly 
+   handled by the user clauses. We will see in more complex examples that this search
+   for a splitting tree may be non-trivial. 
+<div class="paragraph"> </div>
+
+<a id="lab2"></a><h1 class="section">Reasoning principles</h1>
+
+
+<div class="paragraph"> </div>
+
+   We need not only the ability to define complex functions but also get good reasoning
+   support for them.
+   Practically, this translates to the ability to simplify applications of functions 
+   appearing in the goal and to give strong enough proof principles for (recursive)
+   definitions.
+
+<div class="paragraph"> </div>
+
+   <span class="inlinecode"><span class="id" title="keyword">Equations</span></span> provides this through an automatic generation of proofs related to
+   the function. Namely, each defining equation gives rise to a lemma stating the 
+   equality between the left and right hand sides. These equations can be used as 
+   rewrite rules for simplification during proofs, without having to rely on the
+   fragile simplifications implemented by raw reduction. We can also generate the
+   inductive graph of any <span class="inlinecode"><span class="id" title="keyword">Equations</span></span> definition, giving the strongest elimination
+   principle on the function. 
+
+<div class="paragraph"> </div>
+
+   I.e., for <span class="inlinecode"><span class="id" title="var">neg</span></span> the inductive graph is defined as an inductive relation in <span class="inlinecode"><span class="id" title="keyword">Set</span></span>: <br/>
+<span class="inlinecode"><span class="id" title="keyword">Inductive</span> <span class="id" title="var">neg_graph</span> : <span class="id" title="var">bool</span> -&gt; <span class="id" title="var">bool</span> -&gt; <span class="id" title="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="var">neg_graph_equation_1</span> : <span class="id" title="var">neg_graph</span> <span class="id" title="var">true</span> <span class="id" title="var">false</span><br/>
+&nbsp;| <span class="id" title="var">neg_graph_equation_2</span> : <span class="id" title="var">neg_graph</span> <span class="id" title="var">false</span> <span class="id" title="var">true</span><br/>
+<br/>
+*)<br/>
+<br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="equations_simple.html#neg_graph"><span class="id" title="inductive">neg_graph</span></a>.<br/>
+<span class="id" title="keyword">Print</span> <a class="idref" href="equations_simple.html#neg_graph"><span class="id" title="inductive">neg_graph</span></a>.<br/>
+<br/>
+</div>
+
+<div class="doc">
+   Along with a proof of <span class="inlinecode"><span class="id" title="var">Π</span></span> <span class="inlinecode"><span class="id" title="var">b</span>,</span> <span class="inlinecode"><span class="id" title="var">neg_graph</span></span> <span class="inlinecode"><span class="id" title="var">b</span></span> <span class="inlinecode">(<span class="id" title="var">neg</span></span> <span class="inlinecode"><span class="id" title="var">b</span>)</span>, we can eliminate any call
+   to <span class="inlinecode"><span class="id" title="var">neg</span></span> specializing its argument and result in a single command. 
+   Suppose we want to show that <span class="inlinecode"><span class="id" title="var">neg</span></span> is involutive for example, our goal will 
+   look like: <br/>
+<span class="inlinecode">&nbsp;&nbsp;<span class="id" title="var">b</span> : <span class="id" title="var">bool</span><br/>
+&nbsp;&nbsp;============================<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="var">neg</span> (<span class="id" title="var">neg</span> <span class="id" title="var">b</span>) = <span class="id" title="var">b</span> 
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   An application of the tactic <span class="inlinecode"><span class="id" title="var">funelim</span></span> <span class="inlinecode">(<span class="id" title="var">neg</span></span> <span class="inlinecode"><span class="id" title="var">b</span>)</span> will produce two goals corresponding to 
+   the splitting done in <span class="inlinecode"><span class="id" title="var">neg</span></span>: <span class="inlinecode"><span class="id" title="var">neg</span></span> <span class="inlinecode"><span class="id" title="var">false</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">true</span></span> and <span class="inlinecode"><span class="id" title="var">neg</span></span> <span class="inlinecode"><span class="id" title="var">true</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">false</span></span>.
+   These correspond exactly to the rewriting lemmas generated for <span class="inlinecode"><span class="id" title="var">neg</span></span>. 
+</div>
+<div class="code">
+<br/>
+<span class="id" title="keyword">Lemma</span> <a id="neg_inv" class="idref" href="#neg_inv"><span class="id" title="lemma">neg_inv</span></a> : <span class="id" title="keyword">forall</span> <a id="b:6" class="idref" href="#b:6"><span class="id" title="binder">b</span></a>, <a class="idref" href="equations_simple.html#neg"><span class="id" title="definition">neg</span></a> (<a class="idref" href="equations_simple.html#neg"><span class="id" title="definition">neg</span></a> <a class="idref" href="equations_simple.html#b:6"><span class="id" title="variable">b</span></a>) <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="equations_simple.html#b:6"><span class="id" title="variable">b</span></a>.<br/>
+</span>Proof.
+  intros b.
+  funelim (neg b).
+<ul class="doclist">
+<li> simp neg. reflexivity.
+
+</li>
+<li> simp neg. reflexivity.
+
+</li>
+</ul>
+Defined.
+
+<div class="paragraph"> </div>
+
+Check neg_elim.
+Print neg_elim.
+
+<div class="paragraph"> </div>
+
+Lemma neg_inv' : forall b, neg (neg b) = b.
+Proof.
+  intros b.
+  apply neg_elim with (P:=(fun b1 b2 : bool =&gt; neg b2 = b1)).
+<ul class="doclist">
+<li> simp neg. reflexivity.
+
+</li>
+<li> simp neg. reflexivity.
+
+</li>
+</ul>
+Defined.
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+Inductive list {A} : Type :=
+  nil : list
+| cons : A -&gt; list -&gt; list.
+
+<div class="paragraph"> </div>
+
+Arguments list : clear implicits.
+Notation "x :: l" := (cons x l). 
+
+<div class="paragraph"> </div>
+
+Equations tail {A} (l : list A) : list A :=
+tail nil := nil ;
+tail (cons a v) := v.
+
+<div class="paragraph"> </div>
+
+Check tail_equation_2.
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+Equations app {A} (l l' : list A) : list A :=
+app nil l' := l' ;
+app (cons a l) l' := cons a (app l l').
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+Check app_graph. Check @app_graph_equation_1. Check @app_graph_equation_2.
+Lemma app_assoc {A} (k l m:list A): app k (app l m)= app (app k l) m.
+  funelim (app k (app l m)).
+  + now simp app.
+  + simp app. now f_equal.
+Qed.
+
+<div class="paragraph"> </div>
+
+Fixpoint fix_app {A} (l l' : list A) : list A :=
+  match l with
+  | nil =&gt; l'
+  | cons a l =&gt; cons a (fix_app l l')
+  end.
+
+<div class="paragraph"> </div>
+
+Lemma app_assoc_ind_list {A} (k l m:list A):
+  fix_app k (fix_app l m)= fix_app (fix_app k l) m.
+Proof.
+  induction k; simpl;f_equal;auto.
+Qed.
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+Equations filter {A} (l : list A) (p : A -&gt; bool) : list A :=
+filter nil p := nil ;
+filter (cons a l) p with (p a) =&gt; {
+  filter _ p true := a :: filter l p ;
+  filter _ p false := filter l p }.
+
+<div class="paragraph"> </div>
+
+Check filter_elim.
+
+<div class="paragraph"> </div>
+
+Equations filter' {A} (l : list A) (p : A -&gt; bool) : list A :=
+filter' nil p := nil ;
+filter' (cons a l) p with (p a) =&gt; {
+  | true := a :: filter' l p ;
+  | false := filter' l p }.
+
+<div class="paragraph"> </div>
+
+Lemma filter_false_nil {A} (l : list A) :
+  filter l (fun x =&gt; false) = nil.
+Proof.
+  funelim (filter l _).   +     now simp filter.
+  +     simp filter.
+  +     simp filter.
+Qed.
+
+<div class="paragraph"> </div>
+
+Global Transparent filter.
+
+<div class="paragraph"> </div>
+
+Lemma filter_false_nil' {A} (l : list A) :
+  filter l (fun x =&gt; false) = nil.
+Proof.
+  funelim (filter l (fun _ =&gt; true)).   +      reflexivity.
+  +     simp filter.
+  +     simp filter.
+Qed.
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+Equations unzip {A B} (l : list (A * B)) : list A * list B :=
+unzip nil := (nil, nil) ;
+unzip (cons (a,b) l) with (unzip l) =&gt; {
+  unzip _ (la, lb) := (a :: la, b :: lb) }.
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+Equations equal (n m : nat) : { n = m } + { n &lt;&gt; m } :=
+equal O O := left eq_refl ;
+equal (S n) (S m) with (equal n m) := {
+    equal (S n) (S ?(n)) (left eq_refl) := left eq_refl ;
+  equal (S n) (S m) (right p) := right _ } ;
+equal x y := right _.
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+Section EqualManualObligations.
+
+<div class="paragraph"> </div>
+
+      [tactic=idtac]
+  Equations equal' (n m : nat) : { n = m } + { n <> m } :=
+  equal' O O := left eq_refl ;
+    equal' (S n) (S m) with (equal n m) := {
+    equal' (S n) (S ?(n)) (left eq_refl) := left eq_refl ;
+    equal' (S n) (S m) (right p) := right _ } ;
+  equal' x y := right _.
+  Local Obligation Tactic := idtac. (* disable automatic solving of each obligation 
+</div>
+<div class="code">
+&nbsp;&nbsp;<span class="id" title="keyword">Next</span> <span class="id" title="keyword">Obligation</span>. <span class="id" title="tactic">intros</span> ? ? ? <span class="id" title="var">H</span>. <span class="id" title="tactic">discriminate</span> <span class="id" title="var">H</span>. <span class="id" title="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Next</span> <span class="id" title="keyword">Obligation</span>. <span class="id" title="tactic">intros</span> ? ? ? <span class="id" title="var">H</span>. <span class="id" title="tactic">discriminate</span> <span class="id" title="var">H</span>. <span class="id" title="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Next</span> <span class="id" title="keyword">Obligation</span>. <span class="id" title="tactic">intros</span> ? ? ? <span class="id" title="var">H</span>. <span class="id" title="tactic">inversion</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">auto</span>. <span class="id" title="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="equations_simple.html#EqualManualObligations"><span class="id" title="section">EqualManualObligations</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Dependent types are also useful to turn partial functions into total functions by
+   restricting their domain. Typically, we can force the list passed to <span class="inlinecode"><span class="id" title="var">head</span></span> 
+   to be non-empty using the specification:
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Equations</span> <a id="head" class="idref" href="#head"><span class="id" title="definition">head</span></a> {<a id="A:139" class="idref" href="#A:139"><span class="id" title="binder">A</span></a>} (<a id="l:140" class="idref" href="#l:140"><span class="id" title="binder">l</span></a> : <a class="idref" href="equations_simple.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="equations_simple.html#A:139"><span class="id" title="variable">A</span></a>) (<a id="pf:141" class="idref" href="#pf:141"><span class="id" title="binder">pf</span></a> : <a class="idref" href="equations_simple.html#l:140"><span class="id" title="variable">l</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">&lt;&gt;</span></a> <a class="idref" href="equations_simple.html#nil"><span class="id" title="constructor">nil</span></a>) : <span class="id" title="var">A</span> :=<br/>
+<a class="idref" href="equations_simple.html#head:144"><span class="id" title="definition">head</span></a> <a class="idref" href="equations_simple.html#nil"><span class="id" title="constructor">nil</span></a> <a class="idref" href="equations_simple.html#pf:143"><span class="id" title="variable">pf</span></a> <span class="id" title="keyword">with</span> (<span class="id" title="var">pf</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a>) := { | <span class="id" title="notation">!</span> } ; <br/>
+<a class="idref" href="equations_simple.html#head:148"><span class="id" title="definition">head</span></a> (<a class="idref" href="equations_simple.html#cons"><span class="id" title="constructor">cons</span></a> <a class="idref" href="equations_simple.html#a:146"><span class="id" title="variable">a</span></a> <a class="idref" href="equations_simple.html#v:147"><span class="id" title="variable">v</span></a>) <span class="id" title="var">_</span> := <span class="id" title="var">a</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+We decompose the list and are faced with two cases:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> In the first case, the list is empty, hence the proof <span class="inlinecode"><span class="id" title="var">pf</span></span> of type
+     <span class="inlinecode"><span class="id" title="var">nil</span></span> <span class="inlinecode">&lt;&gt;</span> <span class="inlinecode"><span class="id" title="var">nil</span></span> allows us to derive a contradiction by applying it to
+     reflexivity.  We make use of another category of right-hand sides,
+     which we call <i>empty</i> nodes to inform the compiler that a
+     contradiction is derivable in this case.  In general we cannot
+     expect the compiler to find by itself that the context contains a
+     contradiction, as it is undecidable
+     .
+
+<div class="paragraph"> </div>
+
+     However, in this case, one could also write an empty set of clauses
+     for the <span class="inlinecode"><span class="id" title="keyword">with</span></span> subprogram, as Equations applies a heuristic in case
+     of an empty set of clause: it tries to split each of the variables
+     in the context to find an empty type.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> In the second case, we simply return the head of the list,
+     disregarding the proof.  
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+<a id="lab3"></a><h2 class="section">Inductive families</h2>
+
+
+<div class="paragraph"> </div>
+
+   The next step is to make constraints such as non-emptiness part of the 
+   datatype itself. This capability is provided through inductive families in
+   Coq , which are a similar concept to the generalization 
+   of algebraic datatypes to GADTs in functional languages like Haskell 
+   . Families provide a way to associate to each constructor 
+   a different type, making it possible to give specific information about a value 
+   in its type. 
+
+<div class="paragraph"> </div>
+
+<a id="lab4"></a><h3 class="section">Equality</h3>
+
+   The alma mater of inductive families is the propositional equality 
+   <span class="inlinecode"><span class="id" title="var">eq</span></span> defined as: 
+   <br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="var">eq</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">x</span> : <span class="id" title="var">A</span>) : <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Prop</span> := <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="var">eq_refl</span> : <span class="id" title="var">eq</span> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">x</span>. 
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   Equality is a polymorphic relation on <span class="inlinecode"><span class="id" title="var">A</span></span>. (The <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> sort (or kind) categorizes
+   propositions, while the <span class="inlinecode"><span class="id" title="keyword">Set</span></span> sort, equivalent to  in Haskell categorizes 
+   computational types.) Equality is <i>parameterized</i> by a value <span class="inlinecode"><span class="id" title="var">x</span></span> of type <span class="inlinecode"><span class="id" title="var">A</span></span> and 
+   <i>indexed</i> by another value of type <span class="inlinecode"><span class="id" title="var">A</span></span>. Its single constructor states that 
+   equality is reflexive, so the only way to build an object of <span class="inlinecode"><span class="id" title="var">eq</span></span> <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode"><span class="id" title="var">y</span></span> is if 
+   <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode">~=</span> <span class="inlinecode"><span class="id" title="var">y</span></span>, that is if <span class="inlinecode"><span class="id" title="var">x</span></span> is definitionally equal to <span class="inlinecode"><span class="id" title="var">y</span></span>. 
+
+<div class="paragraph"> </div>
+
+   Now what is the elimination principle associated to this inductive family?
+   It is the good old Leibniz substitution principle: <br/>
+<span class="inlinecode"><span class="id" title="keyword">forall</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">x</span> : <span class="id" title="var">A</span>) (<span class="id" title="var">P</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Type</span>), <span class="id" title="var">P</span> <span class="id" title="var">x</span> -&gt; <span class="id" title="keyword">forall</span> <span class="id" title="var">y</span> : <span class="id" title="var">A</span>, <span class="id" title="var">x</span> = <span class="id" title="var">y</span> -&gt; <span class="id" title="var">P</span> <span class="id" title="var">y</span> 
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+   Provided a proof that <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">y</span></span>, we can create on object of type <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode"><span class="id" title="var">y</span></span> from an 
+   existing object of type <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode"><span class="id" title="var">x</span></span>. This substitution principle is enough to show
+   that equality is symmetric and transitive. For example we can use 
+   pattern-matching on equality proofs to show:
+ 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Equations</span> <a id="eqt" class="idref" href="#eqt"><span class="id" title="definition">eqt</span></a> {<a id="A:149" class="idref" href="#A:149"><span class="id" title="binder">A</span></a>} (<a id="x:150" class="idref" href="#x:150"><span class="id" title="binder">x</span></a> <a id="y:151" class="idref" href="#y:151"><span class="id" title="binder">y</span></a> <a id="z:152" class="idref" href="#z:152"><span class="id" title="binder">z</span></a> : <a class="idref" href="equations_simple.html#A:149"><span class="id" title="variable">A</span></a>) (<a id="p:153" class="idref" href="#p:153"><span class="id" title="binder">p</span></a> : <a class="idref" href="equations_simple.html#x:150"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="equations_simple.html#y:151"><span class="id" title="variable">y</span></a>) (<a id="q:154" class="idref" href="#q:154"><span class="id" title="binder">q</span></a> : <a class="idref" href="equations_simple.html#y:151"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="equations_simple.html#z:152"><span class="id" title="variable">z</span></a>) : <span class="id" title="var">x</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <span class="id" title="var">z</span> :=<br/>
+<a class="idref" href="equations_simple.html#eqt:157"><span class="id" title="definition">eqt</span></a> <a class="idref" href="equations_simple.html#x:156"><span class="id" title="variable">x</span></a> <span class="id" title="notation">?(</span><a class="idref" href="equations_simple.html#x:156"><span class="id" title="variable">x</span></a><span class="id" title="notation">)</span> <span class="id" title="notation">?(</span><a class="idref" href="equations_simple.html#x:156"><span class="id" title="variable">x</span></a><span class="id" title="notation">)</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a>. 
+<br/>
+</div>
+
+<div class="doc">
+Let us explain the meaning of the non-linear patterns here that we
+   slipped through in the <span class="inlinecode"><span class="id" title="var">equal</span></span> example. By pattern-matching on the
+   equalities, we have unified <span class="inlinecode"><span class="id" title="var">x</span></span>, <span class="inlinecode"><span class="id" title="var">y</span></span> and <span class="inlinecode"><span class="id" title="var">z</span></span>, hence we determined the
+   <i>values</i> of the patterns for the variables to be <span class="inlinecode"><span class="id" title="var">x</span></span>. The <span class="inlinecode">?(<span class="id" title="var">x</span>)</span>
+   notation is essentially denoting that the pattern is not a candidate
+   for refinement, as it is determined by another pattern. This
+   particular patterns are called "inaccessible". When they are variables
+   the inaccessibility annotation is optional.
+
+<div class="paragraph"> </div>
+
+<a id="lab5"></a><h3 class="section">Indexed datatypes</h3>
+
+
+<div class="paragraph"> </div>
+
+   Functions on <span class="inlinecode"><span class="id" title="var">vector</span></span>s provide more striking examples of this
+   situation.  The <span class="inlinecode"><span class="id" title="var">vector</span></span> family is indexed by a natural number
+   representing the size of the vector: <span class="inlinecode">[</span> <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span> <span class="inlinecode"><span class="id" title="var">vector</span></span> <span class="inlinecode">(<span class="id" title="var">A</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="keyword">Type</span>)</span> <span class="inlinecode">:</span>
+   <span class="inlinecode"><span class="id" title="var">nat</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="keyword">Type</span></span> <span class="inlinecode">:=</span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" title="var">Vnil</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">vector</span></span> <span class="inlinecode"><span class="id" title="var">A</span></span> <span class="inlinecode"><span class="id" title="var">O</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" title="var">Vcons</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">A</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="keyword">forall</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">nat</span>,</span>
+   <span class="inlinecode"><span class="id" title="var">vector</span></span> <span class="inlinecode"><span class="id" title="var">A</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">-&gt;</span> <span class="inlinecode"><span class="id" title="var">vector</span></span> <span class="inlinecode"><span class="id" title="var">A</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n</span>)</span> <span class="inlinecode">]</span>
+
+<div class="paragraph"> </div>
+
+   The empty vector <span class="inlinecode"><span class="id" title="var">Vnil</span></span> has size <span class="inlinecode"><span class="id" title="var">O</span></span> while the cons operation
+   increments the size by one. Now let us define the usual map on
+   vectors: 
+</div>
+<div class="code">
+<span class="id" title="keyword">Arguments</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Vectors.Vector.html#nil"><span class="id" title="constructor">Vector.nil</span></a> {<span class="id" title="var">A</span>}.<br/>
+<span class="id" title="keyword">Arguments</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Vectors.Vector.html#cons"><span class="id" title="constructor">Vector.cons</span></a> {<span class="id" title="var">A</span>} <span class="id" title="var">a</span> {<span class="id" title="var">n</span>} <span class="id" title="var">v</span> : <span class="id" title="tactic">rename</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Notation</span> <a id="vector" class="idref" href="#vector"><span class="id" title="abbreviation">vector</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Vectors.Vector.html#t"><span class="id" title="inductive">Vector.t</span></a>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="Vnil" class="idref" href="#Vnil"><span class="id" title="abbreviation">Vnil</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Vectors.Vector.html#nil"><span class="id" title="constructor">Vector.nil</span></a>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="Vcons" class="idref" href="#Vcons"><span class="id" title="abbreviation">Vcons</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Vectors.Vector.html#cons"><span class="id" title="constructor">Vector.cons</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Equations</span> <a id="vmap" class="idref" href="#vmap"><span class="id" title="definition">vmap</span></a> {<a id="A:158" class="idref" href="#A:158"><span class="id" title="binder">A</span></a> <a id="B:159" class="idref" href="#B:159"><span class="id" title="binder">B</span></a>} (<a id="f:160" class="idref" href="#f:160"><span class="id" title="binder">f</span></a> : <a class="idref" href="equations_simple.html#A:158"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="equations_simple.html#B:159"><span class="id" title="variable">B</span></a>) {<a id="n:161" class="idref" href="#n:161"><span class="id" title="binder">n</span></a>} (<a id="v:162" class="idref" href="#v:162"><span class="id" title="binder">v</span></a> : <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <a class="idref" href="equations_simple.html#A:158"><span class="id" title="variable">A</span></a> <a class="idref" href="equations_simple.html#n:161"><span class="id" title="variable">n</span></a>) :<br/>
+&nbsp;&nbsp;<a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <span class="id" title="var">B</span> <span class="id" title="var">n</span> :=<br/>
+<a class="idref" href="equations_simple.html#vmap:165"><span class="id" title="definition">vmap</span></a> <a class="idref" href="equations_simple.html#f:164"><span class="id" title="variable">f</span></a> (<span class="id" title="var">n</span>:=<span class="id" title="notation">?(</span>0<span class="id" title="notation">)</span>) <a class="idref" href="equations_simple.html#Vnil"><span class="id" title="abbreviation">Vnil</span></a> := <a class="idref" href="equations_simple.html#Vnil"><span class="id" title="abbreviation">Vnil</span></a> ;<br/>
+<a class="idref" href="equations_simple.html#vmap:169"><span class="id" title="definition">vmap</span></a> <a class="idref" href="equations_simple.html#f:167"><span class="id" title="variable">f</span></a> (<a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <a class="idref" href="equations_simple.html#a:166"><span class="id" title="variable">a</span></a> <a class="idref" href="equations_simple.html#v:168"><span class="id" title="variable">v</span></a>) := <a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> (<span class="id" title="var">f</span> <span class="id" title="var">a</span>) (<a class="idref" href="equations_simple.html#vmap:163"><span class="id" title="definition">vmap</span></a> <span class="id" title="var">f</span> <span class="id" title="var">v</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Here the value of the index representing the size of the vector 
+   is directly determined by the constructor, hence in the case tree
+   we have no need to eliminate <span class="inlinecode"><span class="id" title="var">n</span></span>. This means in particular that 
+   the function <span class="inlinecode"><span class="id" title="var">vmap</span></span> does not do any computation with <span class="inlinecode"><span class="id" title="var">n</span></span>, and 
+   the argument could be eliminated in the extracted code.
+   In other words, it provides only <i>logical</i> information about 
+   the shape of <span class="inlinecode"><span class="id" title="var">v</span></span> but no computational information.
+
+<div class="paragraph"> </div>
+
+   The <span class="inlinecode"><span class="id" title="var">vmap</span></span> function works on every member of the <span class="inlinecode"><span class="id" title="var">vector</span></span> family,
+   but some functions may work only for some subfamilies, for example
+   <span class="inlinecode"><span class="id" title="var">vtail</span></span>:
+ 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Equations</span> <a id="vtail" class="idref" href="#vtail"><span class="id" title="definition">vtail</span></a> {<a id="A:170" class="idref" href="#A:170"><span class="id" title="binder">A</span></a> <a id="n:171" class="idref" href="#n:171"><span class="id" title="binder">n</span></a>} (<a id="v:172" class="idref" href="#v:172"><span class="id" title="binder">v</span></a> : <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <a class="idref" href="equations_simple.html#A:170"><span class="id" title="variable">A</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <a class="idref" href="equations_simple.html#n:171"><span class="id" title="variable">n</span></a>)) : <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <span class="id" title="var">A</span> <span class="id" title="var">n</span> :=<br/>
+<a class="idref" href="equations_simple.html#vtail:176"><span class="id" title="definition">vtail</span></a> (<a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <a class="idref" href="equations_simple.html#a:174"><span class="id" title="variable">a</span></a> <a class="idref" href="equations_simple.html#v':175"><span class="id" title="variable">v'</span></a>) := <span class="id" title="var">v'</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The type of <span class="inlinecode"><span class="id" title="var">v</span></span> ensures that <span class="inlinecode"><span class="id" title="var">vtail</span></span> can only be applied to 
+   non-empty vectors, moreover the patterns only need to consider 
+   constructors that can produce objects in the subfamily <span class="inlinecode"><span class="id" title="var">vector</span></span> <span class="inlinecode"><span class="id" title="var">A</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n</span>)</span>,
+   excluding <span class="inlinecode"><span class="id" title="var">Vnil</span></span>. The pattern-matching compiler uses unification 
+   with the theory of constructors to discover which cases need to 
+   be considered and which are impossible. In this case the failed 
+   unification of <span class="inlinecode">0</span> and <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> shows that the <span class="inlinecode"><span class="id" title="var">Vnil</span></span> case is impossible.
+   This powerful unification engine running under the hood permits to write
+   concise code where all uninteresting cases are handled automatically. 
+<div class="paragraph"> </div>
+
+ In order to demonstrate, how Equations simplify definitions that use
+    dependent types, consider the following function defined using basic
+    pattern-matching <span class="inlinecode"><span class="id" title="keyword">match</span></span> <span class="inlinecode">...</span> <span class="inlinecode"><span class="id" title="keyword">with</span></span> 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="Vzip" class="idref" href="#Vzip"><span class="id" title="definition">Vzip</span></a> {<a id="A:177" class="idref" href="#A:177"><span class="id" title="binder">A</span></a> <a id="B:178" class="idref" href="#B:178"><span class="id" title="binder">B</span></a> : <span class="id" title="keyword">Type</span>} : <span class="id" title="keyword">forall</span> {<a id="n:179" class="idref" href="#n:179"><span class="id" title="binder">n</span></a>}, <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <a class="idref" href="equations_simple.html#A:177"><span class="id" title="variable">A</span></a> <a class="idref" href="equations_simple.html#n:179"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <a class="idref" href="equations_simple.html#B:178"><span class="id" title="variable">B</span></a> <a class="idref" href="equations_simple.html#n:179"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> (<a class="idref" href="equations_simple.html#A:177"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">*</span></a> <a class="idref" href="equations_simple.html#B:178"><span class="id" title="variable">B</span></a>) <a class="idref" href="equations_simple.html#n:179"><span class="id" title="variable">n</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fix</span> <span class="id" title="var">zip</span> {<a id="n:180" class="idref" href="#n:180"><span class="id" title="binder">n</span></a>} :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="equations_simple.html#n:180"><span class="id" title="variable">n</span></a> <span class="id" title="keyword">return</span> <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <a class="idref" href="equations_simple.html#A:177"><span class="id" title="variable">A</span></a> <a class="idref" href="equations_simple.html#n:182"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <a class="idref" href="equations_simple.html#B:178"><span class="id" title="variable">B</span></a> <a class="idref" href="equations_simple.html#n:182"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">-&gt;</span></a> <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> (<a class="idref" href="equations_simple.html#A:177"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">*</span></a> <a class="idref" href="equations_simple.html#B:178"><span class="id" title="variable">B</span></a>) <a class="idref" href="equations_simple.html#n:182"><span class="id" title="variable">n</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#O"><span class="id" title="constructor">O</span></a> =&gt; <span class="id" title="keyword">fun</span> <a id="vs:183" class="idref" href="#vs:183"><span class="id" title="binder">vs</span></a> <a id="vs':184" class="idref" href="#vs':184"><span class="id" title="binder">vs'</span></a> =&gt; <a class="idref" href="equations_simple.html#Vnil"><span class="id" title="abbreviation">Vnil</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <span class="id" title="var">n'</span> =&gt; <span class="id" title="keyword">fun</span> (<a id="vs:185" class="idref" href="#vs:185"><span class="id" title="binder">vs</span></a> <a id="vs':186" class="idref" href="#vs':186"><span class="id" title="binder">vs'</span></a> : <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <span class="id" title="var">_</span> (<a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <span class="id" title="var">n'</span>)) =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">match</span> <a class="idref" href="equations_simple.html#vs:185"><span class="id" title="variable">vs</span></a>, <a class="idref" href="equations_simple.html#vs':186"><span class="id" title="variable">vs'</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <span class="id" title="var">v</span> <span class="id" title="var">tl</span>, <a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <span class="id" title="var">v'</span> <span class="id" title="var">tl'</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <a id="f:189" class="idref" href="#f:189"><span class="id" title="binder">f</span></a> =&gt; <a class="idref" href="equations_simple.html#f:189"><span class="id" title="variable">f</span></a> <span class="id" title="var">v</span> <span class="id" title="var">v'</span> <span class="id" title="var">tl</span> <span class="id" title="var">tl'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>) (<span class="id" title="keyword">fun</span> <a id="v:190" class="idref" href="#v:190"><span class="id" title="binder">v</span></a> <a id="v':191" class="idref" href="#v':191"><span class="id" title="binder">v'</span></a> <a id="vs:192" class="idref" href="#vs:192"><span class="id" title="binder">vs</span></a> <a id="vs':193" class="idref" href="#vs':193"><span class="id" title="binder">vs'</span></a> =&gt; <a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><a class="idref" href="equations_simple.html#v:190"><span class="id" title="variable">v</span></a><a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a><a class="idref" href="equations_simple.html#v':191"><span class="id" title="variable">v'</span></a><a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> (<a class="idref" href="equations_simple.html#zip:181"><span class="id" title="variable">zip</span></a> <a class="idref" href="equations_simple.html#vs:192"><span class="id" title="variable">vs</span></a> <a class="idref" href="equations_simple.html#vs':193"><span class="id" title="variable">vs'</span></a>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+It can be written concisely with Equations 
+</div>
+<div class="code">
+<span class="id" title="keyword">Equations</span> <a id="Vzip'" class="idref" href="#Vzip'"><span class="id" title="definition">Vzip'</span></a> {<a id="A:194" class="idref" href="#A:194"><span class="id" title="binder">A</span></a> <a id="B:195" class="idref" href="#B:195"><span class="id" title="binder">B</span></a> : <span class="id" title="keyword">Type</span>} {<a id="n:196" class="idref" href="#n:196"><span class="id" title="binder">n</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>} (<a id="v1:197" class="idref" href="#v1:197"><span class="id" title="binder">v1</span></a> : <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <a class="idref" href="equations_simple.html#A:194"><span class="id" title="variable">A</span></a> <a class="idref" href="equations_simple.html#n:196"><span class="id" title="variable">n</span></a>) (<a id="v2:198" class="idref" href="#v2:198"><span class="id" title="binder">v2</span></a> : <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <a class="idref" href="equations_simple.html#B:195"><span class="id" title="variable">B</span></a> <a class="idref" href="equations_simple.html#n:196"><span class="id" title="variable">n</span></a>)<br/>
+&nbsp;&nbsp;: <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> (<span class="id" title="var">A</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">*</span></a> <span class="id" title="var">B</span>) <span class="id" title="var">n</span> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="equations_simple.html#Vzip':200"><span class="id" title="definition">Vzip'</span></a> <a class="idref" href="equations_simple.html#Vnil"><span class="id" title="abbreviation">Vnil</span></a> <span class="id" title="var">_</span> := <a class="idref" href="equations_simple.html#Vnil"><span class="id" title="abbreviation">Vnil</span></a>;<br/>
+&nbsp;&nbsp;<a class="idref" href="equations_simple.html#Vzip':205"><span class="id" title="definition">Vzip'</span></a> (<a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <a class="idref" href="equations_simple.html#a1:201"><span class="id" title="variable">a1</span></a> <a class="idref" href="equations_simple.html#v1':203"><span class="id" title="variable">v1'</span></a>) (<a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <a class="idref" href="equations_simple.html#a2:202"><span class="id" title="variable">a2</span></a> <a class="idref" href="equations_simple.html#v2':204"><span class="id" title="variable">v2'</span></a>) := <a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><span class="id" title="var">a1</span><a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a><span class="id" title="var">a2</span><a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> (<a class="idref" href="equations_simple.html#Vzip':199"><span class="id" title="definition">Vzip'</span></a> <span class="id" title="var">v1'</span> <span class="id" title="var">v2'</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab6"></a><h1 class="section">Derived notions, No-Confusion</h1>
+
+
+<div class="paragraph"> </div>
+
+    For this to work smoothly, the package requires some derived definitions
+    on each (indexed) family, which can be generated automatically using
+    the generic <span class="inlinecode"><span class="id" title="var">Derive</span></span> command. Here we ask to generate the signature,
+    heterogeneous no-confusion and homogeneous no-confusion principles for vectors: 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Derive</span> <span class="id" title="var">NoConfusion</span> <span class="id" title="keyword">for</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>.<br/>
+<span class="id" title="keyword">Derive</span> <span class="id" title="var">Signature</span> <span class="id" title="var">NoConfusion</span> <span class="id" title="var">NoConfusionHom</span> <span class="id" title="keyword">for</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Vectors.Vector.html#t"><span class="id" title="inductive">vector</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The precise specification of these derived definitions can be found in the manual
+    section . Signature is used to "pack" a value in an inductive family
+    with its index, e.g. the "total space" of every index and value of the family. This
+    can be used to derive the heterogeneous no-confusion principle for the family, which
+    allows to discriminate between objects in potentially different instances/fibers of the family,
+    or deduce injectivity of each constructor. The <span class="inlinecode"><span class="id" title="var">NoConfusionHom</span></span> variant derives
+    the homogeneous no-confusion principle between two objects in the <i>same</i> instance
+    of the family, e.g. to simplify equations of the form <span class="inlinecode"><span class="id" title="var">Vnil</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">Vnil</span></span> <span class="inlinecode">:&gt;</span> <span class="inlinecode"><span class="id" title="var">vector</span></span> <span class="inlinecode"><span class="id" title="var">A</span></span> <span class="inlinecode">0</span>.
+    This last principle can only be defined when pattern-matching on the inductive family
+    does not require the <span class="inlinecode"><span class="id" title="var">K</span></span> axiom and will otherwise fail.
+
+<div class="paragraph"> </div>
+
+<a id="lab7"></a><h2 class="section">Unification and indexed datatypes</h2>
+
+
+<div class="paragraph"> </div>
+
+   Back to our example, of course the equations and the induction principle are simplified in a
+   similar way. If we encounter a call to <span class="inlinecode"><span class="id" title="var">vtail</span></span> in a proof, we can 
+   use the following elimination principle to simplify both the call and the
+   argument which will be automatically substituted by an object of the form
+   <span class="inlinecode"><span class="id" title="var">Vcons</span></span> <span class="inlinecode"><span class="id" title="var">_</span></span> <span class="inlinecode"><span class="id" title="var">_</span></span> <span class="inlinecode"><span class="id" title="var">_</span></span>:<br/>
+<span class="inlinecode"><br/>
+<span class="id" title="keyword">forall</span> <span class="id" title="var">P</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>), <span class="id" title="var">vector</span> <span class="id" title="var">A</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>) -&gt; <span class="id" title="var">vector</span> <span class="id" title="var">A</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="keyword">Prop</span>,<br/>
+(<span class="id" title="keyword">forall</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) (<span class="id" title="var">a</span> : <span class="id" title="var">A</span>) (<span class="id" title="var">v</span> : <span class="id" title="var">vector</span> <span class="id" title="var">A</span> <span class="id" title="var">n</span>), <br/>
+&nbsp;&nbsp;<span class="id" title="var">P</span> <span class="id" title="var">A</span> <span class="id" title="var">n</span> (<span class="id" title="var">Vcons</span> <span class="id" title="var">a</span> <span class="id" title="var">v</span>) <span class="id" title="var">v</span>) -&gt;<br/>
+<span class="id" title="keyword">forall</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) (<span class="id" title="var">v</span> : <span class="id" title="var">vector</span> <span class="id" title="var">A</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)), <span class="id" title="var">P</span> <span class="id" title="var">A</span> <span class="id" title="var">n</span> <span class="id" title="var">v</span> (<span class="id" title="var">vtail</span> <span class="id" title="var">v</span>) ]]  *)<br/>
+<br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="equations_simple.html#vtail_elim"><span class="id" title="definition">vtail_elim</span></a>.<br/>
+<br/>
+</div>
+
+<div class="doc">
+As a witness of the power of the unification, consider the following function 
+    which computes the diagonal of a square matrix of size <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" title="var">n</span></span>.
+
+</div>
+<div class="code">
+<br/>
+<br/>
+<span class="id" title="keyword">Equations</span> <a id="diag" class="idref" href="#diag"><span class="id" title="definition">diag</span></a> {<a id="A:206" class="idref" href="#A:206"><span class="id" title="binder">A</span></a> <a id="n:207" class="idref" href="#n:207"><span class="id" title="binder">n</span></a>} (<a id="v:208" class="idref" href="#v:208"><span class="id" title="binder">v</span></a> : <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> (<a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <a class="idref" href="equations_simple.html#A:206"><span class="id" title="variable">A</span></a> <a class="idref" href="equations_simple.html#n:207"><span class="id" title="variable">n</span></a>) <a class="idref" href="equations_simple.html#n:207"><span class="id" title="variable">n</span></a>) : <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <span class="id" title="var">A</span> <span class="id" title="var">n</span> :=<br/>
+<a class="idref" href="equations_simple.html#diag:210"><span class="id" title="definition">diag</span></a> (<span class="id" title="var">n</span>:=<a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#O"><span class="id" title="constructor">O</span></a>) <a class="idref" href="equations_simple.html#Vnil"><span class="id" title="abbreviation">Vnil</span></a> := <a class="idref" href="equations_simple.html#Vnil"><span class="id" title="abbreviation">Vnil</span></a> ;<br/>
+<a class="idref" href="equations_simple.html#diag:214"><span class="id" title="definition">diag</span></a> (<span class="id" title="var">n</span>:=<a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">_</span></a>) (<a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Vectors.Vector.html#cons"><span class="id" title="constructor">(</span></a><a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <a class="idref" href="equations_simple.html#a:211"><span class="id" title="variable">a</span></a> <a class="idref" href="equations_simple.html#v:212"><span class="id" title="variable">v</span></a><a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Vectors.Vector.html#cons"><span class="id" title="constructor">)</span></a> <a class="idref" href="equations_simple.html#v':213"><span class="id" title="variable">v'</span></a>) :=<br/>
+&nbsp;&nbsp;<a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <span class="id" title="var">a</span> (<a class="idref" href="equations_simple.html#diag:209"><span class="id" title="definition">diag</span></a> (<a class="idref" href="equations_simple.html#vmap"><span class="id" title="definition">vmap</span></a> <a class="idref" href="equations_simple.html#vtail"><span class="id" title="definition">vtail</span></a> <span class="id" title="var">v'</span>)).<br/>
+<br/>
+</div>
+
+<div class="doc">
+Here in the second equation, we know that the elements of the vector
+   are necessarily of size <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> too, hence we can do a nested refinement
+   on the first one to find the first element of the diagonal.
+  
+<div class="paragraph"> </div>
+
+<a id="lab8"></a><h1 class="section">Recursion</h1>
+
+
+<div class="paragraph"> </div>
+
+  Notice how in the <span class="inlinecode"><span class="id" title="var">diag</span></span> example above we explicitely pattern-matched
+  on the index <span class="inlinecode"><span class="id" title="var">n</span></span>, even though the <span class="inlinecode"><span class="id" title="var">Vnil</span></span> and <span class="inlinecode"><span class="id" title="var">Vcons</span></span> pattern matching
+  would have been enough to determine these indices. This is because the
+  following definition also fails: 
+</div>
+<div class="code">
+<br/>
+<span class="id" title="var">Fail</span> <span class="id" title="keyword">Equations</span> <a id="diag'" class="idref" href="#diag'"><span class="id" title="definition">diag'</span></a> {<a id="A:215" class="idref" href="#A:215"><span class="id" title="binder">A</span></a> <a id="n:216" class="idref" href="#n:216"><span class="id" title="binder">n</span></a>} (<a id="v:217" class="idref" href="#v:217"><span class="id" title="binder">v</span></a> : <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> (<a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <a class="idref" href="equations_simple.html#A:215"><span class="id" title="variable">A</span></a> <a class="idref" href="equations_simple.html#n:216"><span class="id" title="variable">n</span></a>) <a class="idref" href="equations_simple.html#n:216"><span class="id" title="variable">n</span></a>) : <a class="idref" href="equations_simple.html#vector"><span class="id" title="abbreviation">vector</span></a> <span class="id" title="var">A</span> <span class="id" title="var">n</span> :=<br/>
+<a class="idref" href="equations_simple.html#diag':219"><span class="id" title="definition">diag'</span></a> <a class="idref" href="equations_simple.html#Vnil"><span class="id" title="abbreviation">Vnil</span></a> := <a class="idref" href="equations_simple.html#Vnil"><span class="id" title="abbreviation">Vnil</span></a> ;<br/>
+<a class="idref" href="equations_simple.html#diag':223"><span class="id" title="definition">diag'</span></a> (<a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Vectors.Vector.html#cons"><span class="id" title="constructor">(</span></a><a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <a class="idref" href="equations_simple.html#a:220"><span class="id" title="variable">a</span></a> <a class="idref" href="equations_simple.html#v:221"><span class="id" title="variable">v</span></a><a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Vectors.Vector.html#cons"><span class="id" title="constructor">)</span></a> <a class="idref" href="equations_simple.html#v':222"><span class="id" title="variable">v'</span></a>) :=<br/>
+&nbsp;&nbsp;<a class="idref" href="equations_simple.html#Vcons"><span class="id" title="abbreviation">Vcons</span></a> <span class="id" title="var">a</span> (<a class="idref" href="equations_simple.html#diag':218"><span class="id" title="definition">diag'</span></a> (<a class="idref" href="equations_simple.html#vmap"><span class="id" title="definition">vmap</span></a> <a class="idref" href="equations_simple.html#vtail"><span class="id" title="definition">vtail</span></a> <span class="id" title="var">v'</span>)).<br/>
+<br/>
+</div>
+
+<div class="doc">
+Indeed, Coq cannot guess the decreasing argument of this fixpoint
+    using its limited syntactic guard criterion: <span class="inlinecode"><span class="id" title="var">vmap</span></span> <span class="inlinecode"><span class="id" title="var">vtail</span></span> <span class="inlinecode"><span class="id" title="var">v'</span></span> cannot
+    be seen to be a (large) subterm of <span class="inlinecode"><span class="id" title="var">v'</span></span> using this criterion, even
+    if it is clearly "smaller". In general, it can also be the case that
+    the compilation algorithm introduces decorations to the proof term
+    that prevent the syntactic guard check from seeing that the
+    definition is structurally recursive.
+
+<div class="paragraph"> </div>
+
+    To alleviate this problem, <span class="inlinecode"><span class="id" title="keyword">Equations</span></span> provides support for
+    <i>well-founded</i> recursive definitions which do not rely on syntactic
+    checks.
+
+<div class="paragraph"> </div>
+
+    The simplest example of this is using the <span class="inlinecode"><span class="id" title="var">lt</span></span> order on natural numbers
+    to define a recursive definition of identity: 
+</div>
+<div class="code">
+<br/>
+<span class="id" title="keyword">Equations</span> <a id="id" class="idref" href="#id"><span class="id" title="definition">id</span></a> (<a id="n:224" class="idref" href="#n:224"><span class="id" title="binder">n</span></a> : <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <span class="id" title="tactic">by</span> <span class="id" title="keyword">wf</span> <span class="id" title="var">n</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Peano.html#lt"><span class="id" title="definition">lt</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="equations_simple.html#id:226"><span class="id" title="definition">id</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#O"><span class="id" title="constructor">0</span></a> := 0;<br/>
+&nbsp;&nbsp;<a class="idref" href="equations_simple.html#id:228"><span class="id" title="definition">id</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <a class="idref" href="equations_simple.html#n':227"><span class="id" title="variable">n'</span></a>) := <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> (<a class="idref" href="equations_simple.html#id:225"><span class="id" title="definition">id</span></a> <span class="id" title="var">n'</span>).<br/>
+<br/>
+</div>
+
+<div class="doc">
+Here <span class="inlinecode"><span class="id" title="var">id</span></span> is defined by well-founded recursion on <span class="inlinecode"><span class="id" title="var">lt</span></span> on the (only)
+    argument <span class="inlinecode"><span class="id" title="var">n</span></span> using the <span class="inlinecode"><span class="id" title="tactic">by</span></span> <span class="inlinecode"><span class="id" title="keyword">wf</span></span> annotation.  At recursive calls of
+    <span class="inlinecode"><span class="id" title="var">id</span></span>, obligations are generated to show that the arguments
+    effectively decrease according to this relation.  Here the proof
+    that <span class="inlinecode"><span class="id" title="var">n'</span></span> <span class="inlinecode">&lt;</span> <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n'</span></span> is discharged automatically.
+
+<div class="paragraph"> </div>
+
+  Well-founded recursion on arbitrary dependent families is not as easy
+  to use, as in general the relations on families are <i>heterogeneous</i>,
+  as they must relate inhabitants of potentially different instances of
+  the family.  <span class="inlinecode"><span class="id" title="keyword">Equations</span></span> provides a <span class="inlinecode"><span class="id" title="var">Derive</span></span> command to generate the
+  subterm relation on any such inductive family and derive the
+  well-foundedness of its transitive closure. This provides
+  course-of-values or so-called "mathematical" induction on these
+  objects, reflecting the structural recursion criterion in the logic. 
+</div>
+<div class="code">
+<br/>
+<span class="id" title="var">Derive</span> <span class="id" title="var">Subterm</span> <span class="id" title="keyword">for</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.15.2/stdlib//Coq.Vectors.Vector.html#t"><span class="id" title="inductive">vector</span></a>.<br/>
+<br/>
+</div>
+
+<div class="doc">
+For vectors for example, the relation is defined as: <br/>
+<span class="inlinecode"><span class="id" title="keyword">Inductive</span> <span class="id" title="var">t_direct_subterm</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">forall</span> <span class="id" title="var">n</span> <span class="id" title="var">n0</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">vector</span> <span class="id" title="var">A</span> <span class="id" title="var">n</span> -&gt; <span class="id" title="var">vector</span> <span class="id" title="var">A</span> <span class="id" title="var">n0</span> -&gt; <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">t_direct_subterm_1_1</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">h</span> : <span class="id" title="var">A</span>) (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) (<span class="id" title="var">H</span> : <span class="id" title="var">vector</span> <span class="id" title="var">A</span> <span class="id" title="var">n</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">t_direct_subterm</span> <span class="id" title="var">A</span> <span class="id" title="var">n</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>) <span class="id" title="var">H</span> (<span class="id" title="var">Vcons</span> <span class="id" title="var">h</span> <span class="id" title="var">H</span>) 
+<div class="paragraph"> </div>
+
+</span>
+<div class="paragraph"> </div>
+
+  That is, there is only one recursive subterm, for the subvector
+  in the <span class="inlinecode"><span class="id" title="var">Vcons</span></span> constructor. We also get a proof of:
+ 
+</div>
+<div class="code">
+<br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="equations_simple.html#well_founded_t_subterm"><span class="id" title="instance">well_founded_t_subterm</span></a> : <span class="id" title="keyword">forall</span> <a id="A:229" class="idref" href="#A:229"><span class="id" title="binder">A</span></a>, <span class="id" title="class">WellFounded</span> (<a class="idref" href="equations_simple.html#t_subterm"><span class="id" title="definition">t_subterm</span></a> <a class="idref" href="equations_simple.html#A:229"><span class="id" title="variable">A</span></a>).<br/>
+</span>
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+Module UnzipVect.
+  Context {A B : Type}.
+
+<div class="paragraph"> </div>
+
+  
+<div class="paragraph"> </div>
+
+  Equations unzip {n} (v : vector (A * B) n) : vector A n * vector B n
+    by wf (signature_pack v) (@t_subterm (A * B)) :=
+  unzip Vnil := (Vnil, Vnil) ;
+  unzip (Vector.cons (pair x y) v) with unzip v := {
+    | pair xs ys := (Vector.cons x xs, Vector.cons y ys) }.
+
+<div class="paragraph"> </div>
+
+End UnzipVect.
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+Equations diag' {A n} (v : vector (vector A n) n) : vector A n by wf n :=
+diag' Vnil := Vnil ;
+diag' (Vcons (Vcons a v) v') :=
+  Vcons a (diag' (vmap vtail v')).
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+Extraction Language OCaml.
+
+<div class="paragraph"> </div>
+
+Extraction diag'.
+
+<div class="paragraph"> </div>
+
+Extraction filter.
+</div>
+<div class="code">
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

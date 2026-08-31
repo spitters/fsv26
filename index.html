@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Formal Software Verification 2026</title>
+  <link rel="stylesheet" type="text/css" href="assets/style.css">
+  <style>
+    body { max-width: 60em; margin: 1em auto; padding: 0 1em; }
+    table { border-collapse: collapse; }
+    td, th { vertical-align: top; padding: 0.3em 0.6em; border-bottom: 1px solid #ddd; }
+    th { text-align: left; }
+    .small { font-size: 90%; color: #444; }
+    .todo { background: #fff3cd; }
+  </style>
+</head>
+<body>
+<h1><a href="https://kursuskatalog.au.dk/en/search?q=Formal%20Software%20Verification">Formal Software Verification</a> 2026</h1>
+<p><span class="important">Bring your computer</span></p>
+
+<h2>Lecturer</h2>
+<p><strong>Bas Spitters</strong></p>
+<h2>Teaching Assistant</h2>
+<p><strong>Jens Emil Christensen</strong></p>
+
+<h2>Contact</h2>
+<p>We use the discussion board on <a href="https://brightspace.au.dk/d2l/home/219801">Brightspace</a>
+for general discussions about the exercises, projects, and Rocq.</p>
+
+<h2>Course material</h2>
+<p>
+During this course we use the <a href="https://rocq-prover.org/">Rocq proof assistant</a> (formerly Coq).
+Rocq is both a functional programming language and a system for reasoning about one's programs using
+<em>formal proofs</em>.
+</p>
+<p>
+<strong>Installation.</strong> The easiest route is
+<a href="https://github.com/spitters/au-fsv">Docker and VS Code</a> (Rocq 9.0, VsRocq, QuickChick, Equations preinstalled;
+the same image is used by the autograder).
+Alternatively, install the <a href="https://rocq-prover.org/releases/2025.08.3">Rocq Platform 2025.08.3</a>
+(Rocq 9.0, the version the course material is tested with; see <a href="https://rocq-prover.org/install">install</a>)
+and choose an <a href="https://rocq-prover.org/install#linux-vscode">IDE</a>; VS Code with VsRocq is recommended.
+</p>
+<p>
+<strong>In the browser.</strong> The lectures use executable slides: every code block runs in the browser
+(no installation). The full books are available the same way.
+The Rocq panel opens on the right; the first visit downloads about 40 MB of
+libraries, so wait for the package list to finish before stepping.
+If the panel is missing, click the plug icon at the right edge or add
+<code>?jscoq=on</code> to the URL. Use a recent desktop Chrome or Firefox.
+<a href="jscoq/examples/scratchpad.html">Scratchpad</a> for live experiments.
+The QuickChick volume is read-only in the browser; run QuickChick in Docker.
+</p>
+<p>
+We use part of the online textbook <a href="https://softwarefoundations.cis.upenn.edu/">Software Foundations</a>
+by Benjamin C. Pierce et al. (Logical Foundations v7.0, Programming Language Foundations, QuickChick).
+Links below go to the copies hosted here; the
+<a href="https://softwarefoundations.cis.upenn.edu/lf-current/toc.html">upstream pages</a> are equivalent.
+</p>
+
+<h2>Homework</h2>
+<p>
+The course includes a track of weekly exercises, handed in through
+<a href="https://classroom50.org/AUfunctionalprogramming/fsv26">Classroom 50</a>.
+Submission and approval of 10 mandatory assignments is required:
+five assignments from the first seven weeks and five from the second.
+Work in groups of two (exceptionally, three) is encouraged; one hand-in per group.
+<span class="important">The exercises are handed in each Friday before 11:00</span>.
+To hand in, accept each assignment through its link in the schedule below (one repository per group;
+the first group member accepts and invites the others as collaborators); your hand-in is the last
+commit on the default branch before the deadline.
+Come prepared to the Q&amp;A sessions so you can ask questions in person.
+</p>
+<p>Rocq must accept the homework handed in as a <span class="bracket">.v</span> file in its entirety.
+The exercise will not be graded if Rocq does not accept the file.
+Use <span class="bracket">Admitted</span> to make Rocq accept incomplete proofs.
+</p>
+<p>You are not allowed to use Rocq tactics in the homework that we have not yet discussed
+(for example <span class="bracket">tauto</span>, <span class="bracket">eauto</span> and
+<span class="bracket">lia</span> are forbidden).</p>
+
+<h2><b>Preliminary</b> schedule</h2>
+<p>Lectures are Mondays 10:15–12:00 in room 5335-184 (Seminarlokale, Nygaard building, Åbogade 34); see the <a href="https://timetable.au.dk/schedule">timetable</a> for the Q&amp;A sessions.
+"Slides" are the executable lecture decks; "Book" is the corresponding chapter.
+Weeks 35–41 cover Logical Foundations; weeks 43–49 cover selected topics. Week 42 is the autumn break.</p>
+
+<table>
+<thead><tr><th style="width: 6em">Week</th><th style="width: 34%">Topics</th><th>Slides</th><th>Book</th><th>Assignment</th></tr></thead>
+<tbody>
+<tr><td>35</td>
+  <td>Installing Rocq<br>Basic inductive types<br>Proving using computation<br>Rewriting</td>
+  <td><a href="jscoq/terse/Basics.html">Basics</a>, <a href="jscoq/terse/Induction.html">Induction</a></td>
+  <td><a href="jscoq/lf/Preface.html">Preface</a>, <a href="jscoq/lf/Basics.html">Basics</a>, <a href="jscoq/lf/Induction.html">Induction</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-1/accept">Assignment 1</a> — Fri 28 Aug 11:00</td></tr>
+<tr><td>36</td>
+  <td>Lists and polymorphic functions</td>
+  <td><a href="jscoq/terse/Lists.html">Lists</a>, <a href="jscoq/terse/Poly.html">Poly</a></td>
+  <td><a href="jscoq/lf/Lists.html">Lists</a>, <a href="jscoq/lf/Poly.html">Poly</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-2/accept">Assignment 2</a> — Fri 4 Sep 11:00</td></tr>
+<tr><td>37</td>
+  <td>Tactics and logic</td>
+  <td><span class="small">available after the lecture</span></td>
+  <td><a href="jscoq/lf/Tactics.html">Tactics</a>, <a href="jscoq/lf/Logic.html">Logic</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-3/accept">Assignment 3</a> — Fri 11 Sep 11:00</td></tr>
+<tr><td>38</td>
+  <td>Inductively defined propositions</td>
+  <td><span class="small">available after the lecture</span></td>
+  <td><a href="jscoq/lf/IndProp.html">IndProp</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-4/accept">Assignment 4</a> — Fri 18 Sep 11:00</td></tr>
+<tr><td>39</td>
+  <td>Proof objects, induction principles</td>
+  <td><span class="small">available after the lecture</span></td>
+  <td><a href="jscoq/lf/Maps.html">Maps</a>, <a href="jscoq/lf/ProofObjects.html">ProofObjects</a>, <a href="jscoq/lf/Rel.html">Rel</a>, <a href="jscoq/lf/IndPrinciples.html">IndPrinciples</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-5/accept">Assignment 5</a> — Fri 25 Sep 11:00</td></tr>
+<tr><td>40</td>
+  <td>Imp: a simple imperative language</td>
+  <td><span class="small">available after the lecture</span></td>
+  <td><a href="jscoq/lf/Imp.html">Imp</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-6/accept">Assignment 6</a> — Fri 2 Oct 11:00</td></tr>
+<tr><td>41</td>
+  <td>Automation</td>
+  <td><span class="small">available after the lecture</span></td>
+  <td><a href="jscoq/lf/Auto.html">Auto</a>, <a href="jscoq/lf/AltAuto.html">AltAuto</a>, <a href="jscoq/lf/ImpCEvalFun.html">ImpCEvalFun</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-7/accept">Assignment 7</a> — Fri 9 Oct 11:00</td></tr>
+<tr><td>42</td><td class="small">Autumn break</td><td></td><td></td><td></td></tr>
+<tr><td>43</td>
+  <td>Small-step semantics</td>
+  <td><span class="small">available after the lecture</span></td>
+  <td><a href="jscoq/plf/Smallstep.html">Smallstep</a>, <a href="jscoq/plf/Types.html">Types</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-8/accept">Assignment 8</a> — Fri 23 Oct 11:00</td></tr>
+<tr><td>44</td>
+  <td>Simply typed lambda calculus</td>
+  <td><span class="small">available after the lecture</span></td>
+  <td><a href="jscoq/plf/Stlc.html">Stlc</a>, <a href="jscoq/plf/StlcProp.html">StlcProp</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-9/accept">Assignment 9</a> — Fri 30 Oct 11:00</td></tr>
+<tr><td>45</td>
+  <td>Type checking</td>
+  <td><span class="small">available after the lecture</span></td>
+  <td><a href="jscoq/plf/MoreStlc.html">MoreStlc</a>, <a href="jscoq/plf/Typechecking.html">Typechecking</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-10/accept">Assignment 10</a> — Fri 6 Nov 11:00</td></tr>
+<tr><td>46</td>
+  <td>Programming with dependent types</td>
+  <td><span class="small">available after the lecture</span></td>
+  <td><a href="fsv/equations_simple.html">Lecture</a> (<a href="fsv/equations_simple.v">Rocq file</a>),
+      <a href="https://github.com/mattam82/Coq-Equations/#documentation">Equations manual</a>,
+      <a href="https://mattam82.github.io/Coq-Equations/examples/">Equations introduction</a>,
+      <a href="https://rocq-prover.org/platform-docs/">Tutorial</a>,
+      <a href="fsv/VecMtxExercises.v">Exercises</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-11/accept">Assignment 11</a> — Fri 13 Nov 11:00</td></tr>
+<tr><td>47</td>
+  <td>Type classes</td>
+  <td><span class="small">available after the lecture</span></td>
+  <td><a href="jscoq/qc/Typeclasses.html">Typeclasses</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-12/accept">Assignment 12</a> — Fri 20 Nov 11:00</td></tr>
+<tr><td>48</td>
+  <td>Monads</td>
+  <td></td>
+  <td><a href="fsv/22/monad.v">Lecture</a>, <a href="fsv/22/monad_ex.v">Exercises</a></td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-13/accept">Assignment 13</a> — Fri 27 Nov 11:00</td></tr>
+<tr><td>49</td>
+  <td>QuickChick</td>
+  <td><span class="small">available after the lecture</span></td>
+  <td><a href="jscoq/qc/QC.html">QC</a> (run in Docker)</td>
+  <td><a href="https://classroom50.org/AUfunctionalprogramming/fsv26/assignments/assignment-14/accept">Assignment 14</a> — Fri 4 Dec 11:00</td></tr>
+</tbody></table>
+
+<h2>Rocq project</h2>
+<p>The course finishes with a Rocq project; lists of suggestions are
+<a href="fsv/fun18projects.pdf">here</a> and <a href="fsv/fun18proj2.pdf">here</a>.
+You may also invent a Rocq project yourself, or do a variation or extension of one of the suggested projects.
+If you invent a project yourself or use a variation of the suggestions, you have to discuss it with the lecturer.</p>
+
+<p>You are allowed to work in groups, and you may write the report together. You are fully responsible for
+the code and the report; the oral exam tests your understanding of all the material.
+From groups I expect a bigger effort, which means doing at least some of the "very hard" exercises.</p>
+
+<p>To complete the Rocq project, you deliver:</p>
+<ul>
+<li>Registration of your final project on Brightspace, due <span class="important todo">TBA</span>.
+    Discuss your choice with the lecturer before then, especially when proposing a project of your own design.</li>
+<li>A set of Rocq <span class="bracket">.v</span> files containing the solution to your project and a
+    written report, due <span class="important todo">TBA</span>.</li>
+</ul>
+
+<p>The written report is 5 to 10 pages in academic style and includes:</p>
+<ol type="a">
+<li>Name and student number.</li>
+<li>A short introduction with at least a description of the project you have chosen; do not copy the
+    description from the projects file.</li>
+<li>A description of the problems you encountered during the project and how you solved them.
+    If you had multiple solutions in mind, describe them and explain why you picked the one you used.</li>
+<li>A conclusion with at least your experience using Rocq: what you liked and what you did not like.</li>
+</ol>
+<p>Do <em>not</em> include unnecessarily long excerpts of Rocq code; use small fragments to illustrate a point.
+Informal proofs are formulated as taught during the course. Do <em>not</em> paraphrase Rocq proofs in natural
+language ("now we apply tactic <span class="bracket">X</span> so our goal becomes <span class="bracket">Y</span>").</p>
+
+<h2>Grading</h2>
+<p>The grade reflects an overall assessment of:</p>
+<ul>
+<li>the group project;</li>
+<li>an individual oral examination, which also tests your understanding of <b>all the material</b> in the course.</li>
+</ul>
+<p class="important">Only students with approved exercises can attend the oral exam and thus pass the course.</p>
+
+<p>The grade of the Rocq project is based on:</p>
+<ol type="a">
+<li><strong>Correctness:</strong> whether the Rocq definitions and lemmas correctly model the problem.</li>
+<li><strong>Completeness:</strong> whether all lemmas are proven (no lemmas omitted, no proofs finished with
+    <span class="bracket">admit</span> or <span class="bracket">Admitted</span>).</li>
+<li><strong>Style:</strong> whether the Rocq code follows the style guidelines (bullets and
+    <span class="bracket">Case</span> markers, sensible variable names, use of implicit arguments).</li>
+<li><strong>Effectiveness:</strong> whether the definitions and proofs are given in an effective way
+    (no useless proof steps; the <span class="bracket">induction</span> tactic not used blindly).</li>
+<li><strong>Report:</strong> style, presentation, language and correctness of the report.</li>
+</ol>
+
+<p>During the oral exam we test your understanding of the project, e.g. by asking you to explain proofs of
+the project informally, by querying you about the contents of your report, <b>or by asking general questions
+about the contents of the course</b>.<br>
+Bring your laptop!</p>
+
+<hr>
+<p class="small">
+Software Foundations is © Benjamin C. Pierce et al., distributed under its
+<a href="jscoq/LICENSE-SF.txt">licence</a>.
+The in-browser Rocq is <a href="https://github.com/jscoq/jscoq">jsCoq</a> (AGPL-3.0), built from a
+<a href="https://github.com/spitters/jscoq/tree/rocq9-fixes">modified source tree</a> that runs Rocq 9.0.
+Previous edition: <a href="https://users-cs.au.dk/spitters/fsv25.html">FSV 2025</a>.
+</p>
+</body>
+</html>
