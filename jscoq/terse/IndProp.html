@@ -1,0 +1,2608 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="common/css/sf.css" rel="stylesheet" type="text/css" />
+<title>IndProp: Inductively Defined Propositions</title>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="common/slides.js"></script>
+<link href="common/css/slides.css" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" type="text/css" href="../dist/frontend/index.css"/>
+<link rel="stylesheet" type="text/css" href="common/css/jscoq.css"/>
+<link rel="stylesheet" type="text/css" href="../pls-deck.css"/>
+<script src="../jscoq-agent-sf2.js" type="module"></script>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<div id='logoinheader'><a href='https://softwarefoundations.cis.upenn.edu'>
+<img src='common/media/image/sf_logo_sm.png' alt='Software Foundations Logo'></a></div>
+<div class='booktitleinheader'><a href='index.html'>Volume 1: Logical Foundations</a></div>
+<ul id='menu'>
+   <li class='section_name'><a href='toc.html'>Table of Contents</a></li>
+   <li class='section_name'><a href='coqindex.html'>Index</a></li>
+   <li class='section_name'><a href='deps.html'>Roadmap</a></li>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">IndProp<span class="subtitle">Inductively Defined Propositions</span></h1>
+
+
+
+<div class="doc">
+<a id="lab252"></a><h1 class="section">Inductively Defined Propositions</h1>
+
+<div class="paragraph"> </div>
+
+ In the <a href="Logic.html"><span class="inlineref">Logic</span></a> chapter, we looked at several ways of writing
+    propositions, including conjunction, disjunction, and existential
+    quantification.
+
+<div class="paragraph"> </div>
+
+    In this chapter, we bring yet another new tool into the mix:
+    <i>inductively defined propositions</i>.
+
+<div class="paragraph"> </div>
+
+    To begin, some examples... 
+</div>
+
+<div class="doc">
+<a id="lab253"></a><h2 class="section">Example: The Collatz Conjecture</h2>
+
+<div class="paragraph"> </div>
+
+ The <i>Collatz Conjecture</i> is a famous open problem in number
+    theory.
+
+<div class="paragraph"> </div>
+
+    Its statement is quite simple.  First, we define a function <span class="inlinecode"><span class="id" title="var">csf</span></span>
+    on numbers, as follows (where <span class="inlinecode"><span class="id" title="var">csf</span></span> stands for "Collatz step function"): 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Set Warnings &quot;-notation-overridden&quot;.
+From LF Require Export Logic.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">div2</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : <span class="id" title="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;0 ⇒ 0<br/>
+&nbsp;&nbsp;| 1 ⇒ 0<br/>
+&nbsp;&nbsp;| <span class="id" title="var">S</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>) ⇒ <span class="id" title="var">S</span> (<span class="id" title="var">div2</span> <span class="id" title="var">n</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">csf</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : <span class="id" title="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">if</span> <span class="id" title="var">even</span> <span class="id" title="var">n</span> <span class="id" title="keyword">then</span> <span class="id" title="var">div2</span> <span class="id" title="var">n</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">else</span> (3 × <span class="id" title="var">n</span>) + 1.<br/>
+</div>
+
+<div class="doc">
+<a id="lab254"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ Next, we look at what happens when we repeatedly apply <span class="inlinecode"><span class="id" title="var">csf</span></span> to
+    some given starting number.  For example, <span class="inlinecode"><span class="id" title="var">csf</span></span> <span class="inlinecode">12</span> is <span class="inlinecode">6</span>, and
+    <span class="inlinecode"><span class="id" title="var">csf</span></span> <span class="inlinecode">6</span> is <span class="inlinecode">3</span>, so by repeatedly applying <span class="inlinecode"><span class="id" title="var">csf</span></span> we get the
+    sequence <span class="inlinecode">12,</span> <span class="inlinecode">6,</span> <span class="inlinecode">3,</span> <span class="inlinecode">10,</span> <span class="inlinecode">5,</span> <span class="inlinecode">16,</span> <span class="inlinecode">8,</span> <span class="inlinecode">4,</span> <span class="inlinecode">2,</span> <span class="inlinecode">1</span>.
+
+<div class="paragraph"> </div>
+
+    Similarly, if we start with <span class="inlinecode">19</span>, we get the longer sequence <span class="inlinecode">19,</span>
+    <span class="inlinecode">58,</span> <span class="inlinecode">29,</span> <span class="inlinecode">88,</span> <span class="inlinecode">44,</span> <span class="inlinecode">22,</span> <span class="inlinecode">11,</span> <span class="inlinecode">34,</span> <span class="inlinecode">17,</span> <span class="inlinecode">52,</span> <span class="inlinecode">26,</span> <span class="inlinecode">13,</span> <span class="inlinecode">40,</span> <span class="inlinecode">20,</span> <span class="inlinecode">10,</span> <span class="inlinecode">5,</span> <span class="inlinecode">16,</span> <span class="inlinecode">8,</span>
+    <span class="inlinecode">4,</span> <span class="inlinecode">2,</span> <span class="inlinecode">1</span>.
+
+<div class="paragraph"> </div>
+
+    Both of these sequences eventually reach <span class="inlinecode">1</span>.  The question posed
+    by Collatz was: Is the sequence starting from <i>any</i> positive
+    natural number guaranteed to reach <span class="inlinecode">1</span> eventually? 
+<div class="paragraph"> </div>
+
+<a id="lab255"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ To formalize this question in Rocq, we might try to define a
+    recursive <i>function</i> that calculates the total number of steps
+    that it takes for such a sequence to reach <span class="inlinecode">1</span>. 
+</div>
+<div class="code">
+
+<span class="id" title="var">Fail</span> <span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">reaches1_in</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : <span class="id" title="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">if</span> <span class="id" title="var">n</span> =? 1 <span class="id" title="keyword">then</span> 0<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">else</span> 1 + <span class="id" title="var">reaches1_in</span> (<span class="id" title="var">csf</span> <span class="id" title="var">n</span>).<br/>
+</div>
+
+<div class="doc">
+You can write this definition in a standard programming language.
+    This definition is, however, rejected by Rocq's termination
+    checker, since the argument to the recursive call, <span class="inlinecode"><span class="id" title="var">csf</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span>, is not
+    "obviously smaller" than <span class="inlinecode"><span class="id" title="var">n</span></span>.
+
+<div class="paragraph"> </div>
+
+    Indeed, this isn't just a pointless limitation: functions in Rocq
+    are required to be total, to ensure logical consistency.
+
+<div class="paragraph"> </div>
+
+    Moreover, we can't fix it by devising a more clever termination
+    checker: deciding whether this particular function is total
+    would be equivalent to settling the Collatz conjecture! 
+<div class="paragraph"> </div>
+
+<a id="lab256"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ Another idea could be to express the concept of "eventually
+    reaches <span class="inlinecode">1</span> in the Collatz sequence" as an <i>recursively defined
+    property</i> of numbers <span class="inlinecode"><span class="id" title="var">Collatz_holds_for</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>. 
+</div>
+<div class="code">
+
+<span class="id" title="var">Fail</span> <span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">Collatz_holds_for</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| 0 ⇒ <span class="id" title="var">False</span><br/>
+&nbsp;&nbsp;| 1 ⇒ <span class="id" title="var">True</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">_</span> ⇒ <span class="id" title="keyword">if</span> <span class="id" title="var">even</span> <span class="id" title="var">n</span> <span class="id" title="keyword">then</span> <span class="id" title="var">Collatz_holds_for</span> (<span class="id" title="var">div2</span> <span class="id" title="var">n</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <span class="id" title="var">Collatz_holds_for</span> ((3 × <span class="id" title="var">n</span>) + 1)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+This recursive function is also rejected by the termination
+    checker, since, while we could in principle convince Rocq that
+    <span class="inlinecode"><span class="id" title="var">div2</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> is smaller than <span class="inlinecode"><span class="id" title="var">n</span></span>, we certainly can't convince it that
+    <span class="inlinecode">(3</span> <span class="inlinecode">×</span> <span class="inlinecode"><span class="id" title="var">n</span>)</span> <span class="inlinecode">+</span> <span class="inlinecode">1</span> is smaller than <span class="inlinecode"><span class="id" title="var">n</span></span>! 
+<div class="paragraph"> </div>
+
+<a id="lab257"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ Fortunately, there is another way to do it: We can express the
+    concept "reaches <span class="inlinecode">1</span> eventually in the Collatz sequence" as an
+    <i>inductively defined property</i> of numbers. Intuitively, this
+    property is defined by a set of rules:
+
+<div class="paragraph"> </div>
+
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (Chf_one) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">Collatz_holds_for 1</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">even n = true&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Collatz_holds_for (div2 n)</td>
+  <td class="infrulenamecol" rowspan="3">
+    (Chf_even) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">Collatz_holds_for n</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">even n = false&nbsp;&nbsp;&nbsp;&nbsp;Collatz_holds_for ((3 * n) + 1)</td>
+  <td class="infrulenamecol" rowspan="3">
+    (Chf_odd) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">Collatz_holds_for n</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+    So there are three ways to prove that a number <span class="inlinecode"><span class="id" title="var">n</span></span> eventually
+    reaches 1 in the Collatz sequence:
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" title="var">n</span></span> is 1;
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">n</span></span> is even and <span class="inlinecode"><span class="id" title="var">div2</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> eventually reaches 1;
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">n</span></span> is odd and <span class="inlinecode">(3</span> <span class="inlinecode">×</span> <span class="inlinecode"><span class="id" title="var">n</span>)</span> <span class="inlinecode">+</span> <span class="inlinecode">1</span> eventually reaches 1.
+
+</li>
+</ul>
+<a id="lab258"></a><h3 class="section"> </h3>
+ We can prove that a number reaches 1 by constructing a (finite)
+    derivation using these rules. For instance, here is the derivation
+    proving that 12 reaches 1 (where we left out the evenness/oddness
+    premises):
+<br/>
+<span class="inlinecode"><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------- (<span class="id" title="var">Chf_one</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------- (<span class="id" title="var">Chf_even</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> 2<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------- (<span class="id" title="var">Chf_even</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> 4<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------- (<span class="id" title="var">Chf_even</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> 8<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------- (<span class="id" title="var">Chf_even</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> 16<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------- (<span class="id" title="var">Chf_odd</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> 5<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------- (<span class="id" title="var">Chf_even</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> 10<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------- (<span class="id" title="var">Chf_odd</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> 3<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------- (<span class="id" title="var">Chf_even</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> 6<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------- (<span class="id" title="var">Chf_even</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> 12
+</span><a id="lab259"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ Formally in Rocq, the <span class="inlinecode"><span class="id" title="var">Collatz_holds_for</span></span> property is
+    <i>inductively defined</i>: 
+</div>
+<h3 class="section slidesplit"> </h3>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">Collatz_holds_for</span> : <span class="id" title="var">nat</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">Chf_one</span> : <span class="id" title="var">Collatz_holds_for</span> 1<br/>
+&nbsp;&nbsp;| <span class="id" title="var">Chf_even</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : <span class="id" title="var">even</span> <span class="id" title="var">n</span> = <span class="id" title="var">true</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> (<span class="id" title="var">div2</span> <span class="id" title="var">n</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> <span class="id" title="var">n</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">Chf_odd</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) :  <span class="id" title="var">even</span> <span class="id" title="var">n</span> = <span class="id" title="var">false</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> ((3 × <span class="id" title="var">n</span>) + 1) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Collatz_holds_for</span> <span class="id" title="var">n</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab260"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ For particular numbers, we can now prove that the Collatz sequence
+    reaches <span class="inlinecode">1</span> (we'll look more closely at how it works a bit later
+    in the chapter): 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Example</span> <span class="id" title="var">Collatz_holds_for_12</span> : <span class="id" title="var">Collatz_holds_for</span> 12.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">Chf_even</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">Chf_even</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">Chf_odd</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">Chf_even</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">Chf_odd</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">Chf_even</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">Chf_even</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">Chf_even</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">Chf_even</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">Chf_one</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab261"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ The Collatz conjecture then states that the sequence beginning
+    from <i>any</i> positive number reaches <span class="inlinecode">1</span>: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Conjecture</span> <span class="id" title="var">collatz</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>, <span class="id" title="var">n</span> ≠ 0 → <span class="id" title="var">Collatz_holds_for</span> <span class="id" title="var">n</span>.<br/>
+</div>
+
+<div class="doc">
+If you succeed in proving this conjecture, you've got a bright
+    future as a number theorist!  But don't spend too long on it --
+    it's been open since 1937. 
+</div>
+
+<div class="doc">
+<a id="lab262"></a><h2 class="section">Example: Binary relation for comparing numbers</h2>
+
+<div class="paragraph"> </div>
+
+ A binary <i>relation</i> on a set <span class="inlinecode"><span class="id" title="var">X</span></span> has Rocq type <span class="inlinecode"><span class="id" title="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>.
+    This is a family of propositions parameterized by two elements of
+    <span class="inlinecode"><span class="id" title="var">X</span></span> -- i.e., a proposition about pairs of elements of <span class="inlinecode"><span class="id" title="var">X</span></span>. 
+<div class="paragraph"> </div>
+
+ For example, one familiar binary relation on <span class="inlinecode"><span class="id" title="var">nat</span></span> is <span class="inlinecode"><span class="id" title="var">le</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">nat</span></span> <span class="inlinecode">→</span>
+    <span class="inlinecode"><span class="id" title="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>, the less-than-or-equal-to relation, which can be
+    inductively defined by the following two rules: 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (le_n) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">le n n</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">le n m</td>
+  <td class="infrulenamecol" rowspan="3">
+    (le_S) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">le n (S m)</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+ This corresponds to the following inductive definition in Rocq: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Module LePlayground.</div></div>
+<div class="code">
+<hr class='doublespaceincode'/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">le</span> : <span class="id" title="var">nat</span> → <span class="id" title="var">nat</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">le_n</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>)   : <span class="id" title="var">le</span> <span class="id" title="var">n</span> <span class="id" title="var">n</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">le_S</span> (<span class="id" title="var">n</span> <span class="id" title="var">m</span> : <span class="id" title="var">nat</span>) : <span class="id" title="var">le</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> → <span class="id" title="var">le</span> <span class="id" title="var">n</span> (<span class="id" title="var">S</span> <span class="id" title="var">m</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Notation</span> &quot;n &lt;= m" := (<span class="id" title="var">le</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/><hr class='doublespaceincode'/>
+</div>
+
+<div class="doc">
+<a id="lab263"></a><h2 class="section">Example: Transitive Closure</h2>
+
+<div class="paragraph"> </div>
+
+ Another example: The <i>transitive closure</i> of a relation <span class="inlinecode"><span class="id" title="var">R</span></span> is the smallest
+    relation that contains <span class="inlinecode"><span class="id" title="var">R</span></span> and that is transitive. This can be defined by
+    the following two rules:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">R x y</td>
+  <td class="infrulenamecol" rowspan="3">
+    (t_step) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">clos_trans R x y</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">clos_trans R x y&nbsp;&nbsp;&nbsp;&nbsp;clos_trans R y z</td>
+  <td class="infrulenamecol" rowspan="3">
+    (t_trans) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">clos_trans R x z</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+    In Rocq this looks as follows:
+
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Example le_3_5 : 3 &lt;= 5.
+Proof.
+  apply le_S. apply le_S. apply le_n. Qed.
+
+End LePlayground.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">clos_trans</span> {<span class="id" title="var">X</span>: <span class="id" title="keyword">Type</span>} (<span class="id" title="var">R</span>: <span class="id" title="var">X</span>→<span class="id" title="var">X</span>→<span class="id" title="keyword">Prop</span>) : <span class="id" title="var">X</span>→<span class="id" title="var">X</span>→<span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_step</span> (<span class="id" title="var">x</span> <span class="id" title="var">y</span> : <span class="id" title="var">X</span>) :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">R</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">clos_trans</span> <span class="id" title="var">R</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">t_trans</span> (<span class="id" title="var">x</span> <span class="id" title="var">y</span> <span class="id" title="var">z</span> : <span class="id" title="var">X</span>) :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">clos_trans</span> <span class="id" title="var">R</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">clos_trans</span> <span class="id" title="var">R</span> <span class="id" title="var">y</span> <span class="id" title="var">z</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">clos_trans</span> <span class="id" title="var">R</span> <span class="id" title="var">x</span> <span class="id" title="var">z</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab264"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ For example, suppose we define a "parent of" relation on a group
+    of people... 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">Person</span> : <span class="id" title="keyword">Type</span> := <span class="id" title="var">Sage</span> | <span class="id" title="var">Cleo</span> | <span class="id" title="var">Ridley</span> | <span class="id" title="var">Moss</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">parent_of</span> : <span class="id" title="var">Person</span> → <span class="id" title="var">Person</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">po_SC</span> : <span class="id" title="var">parent_of</span> <span class="id" title="var">Sage</span> <span class="id" title="var">Cleo</span><br/>
+| <span class="id" title="var">po_SR</span> : <span class="id" title="var">parent_of</span> <span class="id" title="var">Sage</span> <span class="id" title="var">Ridley</span><br/>
+| <span class="id" title="var">po_CM</span> : <span class="id" title="var">parent_of</span> <span class="id" title="var">Cleo</span> <span class="id" title="var">Moss</span>.<br/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" title="var">parent_of</span></span> relation is not transitive, but we can define
+   an "ancestor of" relation as its transitive closure: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">ancestor_of</span> : <span class="id" title="var">Person</span> → <span class="id" title="var">Person</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">clos_trans</span> <span class="id" title="var">parent_of</span>.<br/>
+</div>
+
+<div class="doc">
+Here is a derivation showing that Sage is an ancestor of Moss:
+<br/>
+<span class="inlinecode"><br/>
+&nbsp;-------------------(<span class="id" title="var">po_SC</span>)     -------------------(<span class="id" title="var">po_CM</span>)<br/>
+&nbsp;<span class="id" title="var">parent_of</span> <span class="id" title="var">Sage</span> <span class="id" title="var">Cleo</span>            <span class="id" title="var">parent_of</span> <span class="id" title="var">Cleo</span> <span class="id" title="var">Moss</span><br/>
+---------------------(<span class="id" title="var">t_step</span>)  ---------------------(<span class="id" title="var">t_step</span>)<br/>
+<span class="id" title="var">ancestor_of</span> <span class="id" title="var">Sage</span> <span class="id" title="var">Cleo</span>          <span class="id" title="var">ancestor_of</span> <span class="id" title="var">Cleo</span> <span class="id" title="var">Moss</span><br/>
+----------------------------------------------------(<span class="id" title="var">t_trans</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">ancestor_of</span> <span class="id" title="var">Sage</span> <span class="id" title="var">Moss</span>
+</span>
+</div>
+
+<div class="doc">
+<a id="lab265"></a><h2 class="section">Example: Reflexive and Transitive Closure</h2>
+
+<div class="paragraph"> </div>
+
+ As another example, the <i>reflexive and transitive closure</i>
+    of a relation <span class="inlinecode"><span class="id" title="var">R</span></span> is the
+    smallest relation that contains <span class="inlinecode"><span class="id" title="var">R</span></span> and that is reflexive and
+    transitive. This can be defined by the following three rules
+    (where we added a reflexivity rule to <span class="inlinecode"><span class="id" title="var">clos_trans</span></span>):
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">R x y</td>
+  <td class="infrulenamecol" rowspan="3">
+    (rt_step) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">clos_refl_trans R x y</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (rt_refl) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">clos_refl_trans R x x</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">clos_refl_trans R x y&nbsp;&nbsp;&nbsp;&nbsp;clos_refl_trans R y z</td>
+  <td class="infrulenamecol" rowspan="3">
+    (rt_trans) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">clos_refl_trans R x z</td>
+  <td></td>
+</tr>
+</table></center>
+</div>
+
+<div class="doc">
+<a id="lab266"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ For instance, this enables an equivalent definition of the Collatz
+    conjecture.  First we define a binary relation corresponding to
+    the "Collatz step function" <span class="inlinecode"><span class="id" title="var">csf</span></span>: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Example ancestor_of_ex : ancestor_of Sage Moss.
+Proof.
+  unfold ancestor_of. apply t_trans with Cleo.
+  - apply t_step. apply po_SC.
+  - apply t_step. apply po_CM. Qed.
+
+Inductive clos_refl_trans {X: Type} (R: X-&gt;X-&gt;Prop) : X-&gt;X-&gt;Prop :=
+  | rt_step (x y : X) :
+      R x y -&gt;
+      clos_refl_trans R x y
+  | rt_refl (x : X) :
+      clos_refl_trans R x x
+  | rt_trans (x y z : X) :
+      clos_refl_trans R x y -&gt;
+      clos_refl_trans R y z -&gt;
+      clos_refl_trans R x z.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">cs</span> (<span class="id" title="var">n</span> <span class="id" title="var">m</span> : <span class="id" title="var">nat</span>) : <span class="id" title="keyword">Prop</span> := <span class="id" title="var">csf</span> <span class="id" title="var">n</span> = <span class="id" title="var">m</span>.<br/>
+</div>
+
+<div class="doc">
+This Collatz step relation can be used in conjunction with the
+    reflexive and transitive closure operation to define a <i>Collatz
+    multi-step</i> (<span class="inlinecode"><span class="id" title="var">cms</span></span>) relation, expressing that a number <span class="inlinecode"><span class="id" title="var">n</span></span>
+    reaches another number <span class="inlinecode"><span class="id" title="var">m</span></span> in zero or more Collatz steps: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">cms</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> := <span class="id" title="var">clos_refl_trans</span> <span class="id" title="var">cs</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span>.<br/>
+<span class="id" title="keyword">Conjecture</span> <span class="id" title="var">collatz'</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>, <span class="id" title="var">n</span> ≠ 0 → <span class="id" title="var">cms</span> <span class="id" title="var">n</span> 1.<br/>
+</div>
+
+<div class="doc">
+<a id="lab267"></a><h2 class="section">Example: Permutations</h2>
+
+<div class="paragraph"> </div>
+
+ The familiar mathematical concept of <i>permutation</i> also has an
+    elegant formulation as an inductive relation.  For simplicity,
+    let's focus on permutations of lists with exactly three
+    elements.
+
+<div class="paragraph"> </div>
+
+    We can define such permulations by the following rules:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (perm3_swap12) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">Perm3 [a;b;c] [b;a;c]</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (perm3_swap23) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">Perm3 [a;b;c] [a;c;b]</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">Perm3 l<sub>1</sub> l<sub>2</sub>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Perm3 l<sub>2</sub> l<sub>3</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (perm3_trans) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">Perm3 l<sub>1</sub> l<sub>3</sub></td>
+  <td></td>
+</tr>
+</table></center>    For instance we can derive <span class="inlinecode"><span class="id" title="var">Perm3</span></span> <span class="inlinecode">[1;2;3]</span> <span class="inlinecode">[3;2;1]</span> as follows:
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;--------(<span class="id" title="var">perm_swap12</span>)  ---------------------(<span class="id" title="var">perm_swap23</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Perm3</span> [1;2;3] [2;1;3]  <span class="id" title="var">Perm3</span> [2;1;3] [2;3;1]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;------------------------------(<span class="id" title="var">perm_trans</span>)  ------------(<span class="id" title="var">perm_swap12</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Perm3</span> [1;2;3] [2;3;1]                   <span class="id" title="var">Perm</span> [2;3;1] [3;2;1]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-----------------------------------------------------(<span class="id" title="var">perm_trans</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Perm3</span> [1;2;3] [3;2;1]
+</span>
+<div class="paragraph"> </div>
+
+<a id="lab268"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ In Rocq <span class="inlinecode"><span class="id" title="var">Perm3</span></span> is given the following inductive definition: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">Perm3</span> {<span class="id" title="var">X</span> : <span class="id" title="keyword">Type</span>} : <span class="id" title="var">list</span> <span class="id" title="var">X</span> → <span class="id" title="var">list</span> <span class="id" title="var">X</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">perm3_swap12</span> (<span class="id" title="var">a</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span> : <span class="id" title="var">X</span>) :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Perm3</span> [<span class="id" title="var">a</span>;<span class="id" title="var">b</span>;<span class="id" title="var">c</span>] [<span class="id" title="var">b</span>;<span class="id" title="var">a</span>;<span class="id" title="var">c</span>]<br/>
+&nbsp;&nbsp;| <span class="id" title="var">perm3_swap23</span> (<span class="id" title="var">a</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span> : <span class="id" title="var">X</span>) :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Perm3</span> [<span class="id" title="var">a</span>;<span class="id" title="var">b</span>;<span class="id" title="var">c</span>] [<span class="id" title="var">a</span>;<span class="id" title="var">c</span>;<span class="id" title="var">b</span>]<br/>
+&nbsp;&nbsp;| <span class="id" title="var">perm3_trans</span> (<span class="id" title="var">l<sub>1</sub></span> <span class="id" title="var">l<sub>2</sub></span> <span class="id" title="var">l<sub>3</sub></span> : <span class="id" title="var">list</span> <span class="id" title="var">X</span>) :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Perm3</span> <span class="id" title="var">l<sub>1</sub></span> <span class="id" title="var">l<sub>2</sub></span> → <span class="id" title="var">Perm3</span> <span class="id" title="var">l<sub>2</sub></span> <span class="id" title="var">l<sub>3</sub></span> → <span class="id" title="var">Perm3</span> <span class="id" title="var">l<sub>1</sub></span> <span class="id" title="var">l<sub>3</sub></span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab269"></a><h2 class="section">Example: Evenness (yet again)</h2>
+
+<div class="paragraph"> </div>
+
+ We've already seen two ways of stating a proposition that a number
+    <span class="inlinecode"><span class="id" title="var">n</span></span> is even: We can say
+
+<div class="paragraph"> </div>
+
+      (1) <span class="inlinecode"><span class="id" title="var">even</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">true</span></span> (using the recursive boolean function <span class="inlinecode"><span class="id" title="var">even</span></span>), or
+
+<div class="paragraph"> </div>
+
+      (2) <span class="inlinecode"><span class="id" title="tactic">∃</span></span> <span class="inlinecode"><span class="id" title="var">k</span>,</span> <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">double</span></span> <span class="inlinecode"><span class="id" title="var">k</span></span> (using an existential quantifier). 
+<div class="paragraph"> </div>
+
+<a id="lab270"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ A third possibility, which we'll use as a simple running example
+    in this chapter, is to say that a number is even if we can
+    <i>establish</i> its evenness from the following two rules:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ev_0) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">ev 0</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">ev n</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ev_SS) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">ev (S (S n))</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+ To illustrate how this new definition of evenness works, let's
+    imagine using it to show that <span class="inlinecode">4</span> is even:
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;---- (<span class="id" title="var">ev_0</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">ev</span> 0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;------------ (<span class="id" title="var">ev_SS</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">ev</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> 0))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-------------------- (<span class="id" title="var">ev_SS</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">ev</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> 0))))
+</span>
+<div class="paragraph"> </div>
+
+<a id="lab271"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ We can translate the informal definition of evenness from above
+    into a formal <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span> declaration, where each "way that a
+    number can be even" corresponds to a separate constructor: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">ev</span> : <span class="id" title="var">nat</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">ev_0</span>                       : <span class="id" title="var">ev</span> 0<br/>
+&nbsp;&nbsp;| <span class="id" title="var">ev_SS</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) (<span class="id" title="var">H</span> : <span class="id" title="var">ev</span> <span class="id" title="var">n</span>) : <span class="id" title="var">ev</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)).<br/>
+</div>
+
+<div class="doc">
+There are both similarities and a few differences between
+    inductive <i>properties</i> like <span class="inlinecode"><span class="id" title="var">ev</span></span> and the inductive <i>types</i> like
+    <span class="inlinecode"><span class="id" title="var">nat</span></span> or <span class="inlinecode"><span class="id" title="var">list</span></span> that we have been using throughout the course:
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <span class="id" title="var">list</span> (<span class="id" title="var">X</span>:<span class="id" title="keyword">Type</span>) : <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">nil</span>                       : <span class="id" title="var">list</span> <span class="id" title="var">X</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">cons</span> (<span class="id" title="var">x</span> : <span class="id" title="var">X</span>) (<span class="id" title="var">l</span> : <span class="id" title="var">list</span> <span class="id" title="var">X</span>) : <span class="id" title="var">list</span> <span class="id" title="var">X</span>.<br/>
+]
+</span>    The most important difference is that the constructors of <span class="inlinecode"><span class="id" title="var">ev</span></span>,
+    <span class="inlinecode"><span class="id" title="var">ev_0</span></span> and <span class="inlinecode"><span class="id" title="var">ev_SS</span></span>, yield different types (<span class="inlinecode"><span class="id" title="var">ev</span></span> <span class="inlinecode">0</span> and <span class="inlinecode"><span class="id" title="var">ev</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n</span>))</span>),
+    whereas the <span class="inlinecode"><span class="id" title="var">list</span></span> constructors both build <span class="inlinecode"><span class="id" title="var">list</span></span> <span class="inlinecode"><span class="id" title="var">X</span></span> values. 
+<div class="paragraph"> </div>
+
+<a id="lab272"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ We can think of the inductive definition of <span class="inlinecode"><span class="id" title="var">ev</span></span> as defining a
+    Rocq property <span class="inlinecode"><span class="id" title="var">ev</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>, together with two "evidence
+    constructors": 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Fail Inductive wrong_ev (n : nat) : Prop :=
+  | wrong_ev_0 : wrong_ev 0
+  | wrong_ev_SS (H: wrong_ev n) : wrong_ev (S (S n)).</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Check</span> <span class="id" title="var">ev_0</span> : <span class="id" title="var">ev</span> 0.<br/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">ev_SS</span> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>), <span class="id" title="var">ev</span> <span class="id" title="var">n</span> → <span class="id" title="var">ev</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)).<br/>
+</div>
+
+<div class="doc">
+<a id="lab273"></a><h3 class="section"> </h3>
+ These evidence constructors can be thought of as "primitive
+    evidence of evenness", and they can be used later on just like proven
+    theorems.  In particular, we can use Rocq's <span class="inlinecode"><span class="id" title="tactic">apply</span></span> tactic with the
+    constructor names to obtain evidence for <span class="inlinecode"><span class="id" title="var">ev</span></span> of particular
+    numbers... 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Module EvPlayground.
+
+Inductive ev : nat -&gt; Prop :=
+  | ev_0  : ev 0
+  | ev_SS : forall (n : nat), ev n -&gt; ev (S (S n)).
+
+End EvPlayground.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">ev_4</span> : <span class="id" title="var">ev</span> 4.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">ev_SS</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">ev_SS</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">ev_0</span>. <span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+... or we can use function application syntax to combine several
+    constructors: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">ev_4'</span> : <span class="id" title="var">ev</span> 4.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">apply</span> (<span class="id" title="var">ev_SS</span> 2 (<span class="id" title="var">ev_SS</span> 0 <span class="id" title="var">ev_0</span>)). <span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+In this way, we can also prove theorems that have hypotheses
+    involving <span class="inlinecode"><span class="id" title="var">ev</span></span>. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">ev_plus4</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>, <span class="id" title="var">ev</span> <span class="id" title="var">n</span> → <span class="id" title="var">ev</span> (4 + <span class="id" title="var">n</span>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span>. <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">Hn</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">ev_SS</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">ev_SS</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">Hn</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab274"></a><h2 class="section">Constructing Evidence for Permutations</h2>
+
+<div class="paragraph"> </div>
+
+ Similarly we can apply the evidence constructors to obtain
+    evidence of <span class="inlinecode"><span class="id" title="var">Perm3</span></span> <span class="inlinecode">[1;2;3]</span> <span class="inlinecode">[3;2;1]</span>: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Theorem ev_double : forall n,
+  ev (double n).
+Proof.
+   Admitted.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">Perm3_rev</span> : <span class="id" title="var">Perm3</span> [1;2;3] [3;2;1].<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">perm3_trans</span> <span class="id" title="keyword">with</span> (<span class="id" title="var">l<sub>2</sub></span>:=[2;3;1]).<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="var">perm3_trans</span> <span class="id" title="keyword">with</span> (<span class="id" title="var">l<sub>2</sub></span>:=[2;1;3]).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span> <span class="id" title="var">perm3_swap12</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span> <span class="id" title="var">perm3_swap23</span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="var">perm3_swap12</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab275"></a><h3 class="section"> </h3>
+ And again we can equivalently use function application syntax to
+    combine several constructors. (Note that the Rocq type checker can
+    infer not only types, but also nats and lists, when they are clear
+    from the context.) 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">Perm3_rev'</span> : <span class="id" title="var">Perm3</span> [1;2;3] [3;2;1].<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<span class="id" title="var">perm3_trans</span> <span class="id" title="var">_</span> [2;3;1] <span class="id" title="var">_</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">perm3_trans</span> <span class="id" title="var">_</span> [2;1;3] <span class="id" title="var">_</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">perm3_swap12</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">perm3_swap23</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">perm3_swap12</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>)).<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+So the informal derivation trees we drew above are not too far
+    from what's happening formally.  Formally we're using the evidence
+    constructors to build <i>evidence trees</i>, similar to the finite trees we
+    built using the constructors of data types such as nat, list,
+    binary trees, etc. 
+</div>
+
+<div class="doc">
+<a id="lab276"></a><h1 class="section">Using Evidence in Proofs</h1>
+
+<div class="paragraph"> </div>
+
+ Besides <i>constructing</i> evidence that numbers are even, we can also
+    <i>destruct</i> such evidence, reasoning about how it could have been
+    built.
+
+<div class="paragraph"> </div>
+
+    Defining <span class="inlinecode"><span class="id" title="var">ev</span></span> with an <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span> declaration tells Rocq not
+    only that the constructors <span class="inlinecode"><span class="id" title="var">ev_0</span></span> and <span class="inlinecode"><span class="id" title="var">ev_SS</span></span> are valid ways to
+    build evidence that some number is <span class="inlinecode"><span class="id" title="var">ev</span></span>, but also that these two
+    constructors are the <i>only</i> ways to build evidence that numbers
+    are <span class="inlinecode"><span class="id" title="var">ev</span></span>. 
+<div class="paragraph"> </div>
+
+<a id="lab277"></a><h3 class="section"> </h3>
+ In other words, if someone gives us evidence <span class="inlinecode"><span class="id" title="var">E</span></span> for the proposition
+    <span class="inlinecode"><span class="id" title="var">ev</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span>, then we know that <span class="inlinecode"><span class="id" title="var">E</span></span> must be one of two things:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" title="var">E</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">ev_0</span></span> and <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">O</span></span>, or
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">E</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">ev_SS</span></span> <span class="inlinecode"><span class="id" title="var">n'</span></span> <span class="inlinecode"><span class="id" title="var">E'</span></span> and <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n'</span>)</span>, where <span class="inlinecode"><span class="id" title="var">E'</span></span> is
+        evidence for <span class="inlinecode"><span class="id" title="var">ev</span></span> <span class="inlinecode"><span class="id" title="var">n'</span></span>. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ This suggests that it should be possible to do <i>case
+    analysis</i> and even <i>induction</i> on evidence of evenness... 
+<div class="paragraph"> </div>
+
+<a id="lab278"></a><h2 class="section">Destructing and Inverting Evidence</h2>
+
+<div class="paragraph"> </div>
+
+ We can prove our characterization of evidence for <span class="inlinecode"><span class="id" title="var">ev</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span>,
+    using <span class="inlinecode"><span class="id" title="tactic">destruct</span></span>. 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Lemma Perm3_ex1 : Perm3 [1;2;3] [2;3;1].
+Proof.
+   Admitted.
+
+Lemma Perm3_refl : forall (X : Type) (a b c : X),
+  Perm3 [a;b;c] [a;b;c].
+Proof.
+   Admitted.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">ev_inversion</span> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">ev</span> <span class="id" title="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">n</span> = 0) ∨ (<span class="id" title="tactic">∃</span> <span class="id" title="var">n'</span>, <span class="id" title="var">n</span> = <span class="id" title="var">S</span> (<span class="id" title="var">S</span> <span class="id" title="var">n'</span>) ∧ <span class="id" title="var">ev</span> <span class="id" title="var">n'</span>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">E</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">E</span> <span class="id" title="keyword">as</span> [ | <span class="id" title="var">n'</span> <span class="id" title="var">E'</span>] <span class="id" title="var">eqn</span>:<span class="id" title="var">EE</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E&nbsp;=&nbsp;ev_0&nbsp;:&nbsp;ev&nbsp;0&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">left</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E&nbsp;=&nbsp;ev_SS&nbsp;n'&nbsp;E'&nbsp;:&nbsp;ev&nbsp;(S&nbsp;(S&nbsp;n'))&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">right</span>. <span class="id" title="tactic">∃</span> <span class="id" title="var">n'</span>. <span class="id" title="tactic">split</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">E'</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Facts like this are often called "inversion lemmas" because they
+    allow us to "invert" some given information to reason about all
+    the different ways it could have been derived. 
+<div class="paragraph"> </div>
+
+<a id="lab279"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ We can use the inversion lemma that we proved above to help
+    structure proofs: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Lemma le_inversion : forall (n m : nat),
+  le n m -&gt;
+  (n = m) \/ (exists m&#x27;, m = S m&#x27; /\ le n m&#x27;).
+Proof.
+   Admitted.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">evSS_ev</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>, <span class="id" title="var">ev</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)) → <span class="id" title="var">ev</span> <span class="id" title="var">n</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">E</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">ev_inversion</span> <span class="id" title="keyword">in</span> <span class="id" title="var">E</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">E</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">H<sub>0</sub></span>|<span class="id" title="var">H<sub>1</sub></span>].<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">discriminate</span> <span class="id" title="var">H<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">destruct</span> <span class="id" title="var">H<sub>1</sub></span> <span class="id" title="keyword">as</span> [<span class="id" title="var">n'</span> [<span class="id" title="var">Hnn'</span> <span class="id" title="var">E'</span>]]. <span class="id" title="tactic">injection</span> <span class="id" title="var">Hnn'</span> <span class="id" title="keyword">as</span> <span class="id" title="var">Hnn'</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hnn'</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">E'</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab280"></a><h3 class="section"> </h3>
+ Rocq provides a handy tactic called <span class="inlinecode"><span class="id" title="tactic">inversion</span></span> that does
+    the work of our inversion lemma and more besides. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">evSS_ev'</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">ev</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)) → <span class="id" title="var">ev</span> <span class="id" title="var">n</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">E</span>. <span class="id" title="tactic">inversion</span> <span class="id" title="var">E</span> <span class="id" title="keyword">as</span> [| <span class="id" title="var">n'</span> <span class="id" title="var">E'</span> <span class="id" title="var">Hnn'</span>].<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;We&nbsp;are&nbsp;in&nbsp;the&nbsp;<span class="inlinecode"><span class="id" title="var">E</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">ev_SS</span></span> <span class="inlinecode"><span class="id" title="var">n'</span></span> <span class="inlinecode"><span class="id" title="var">E'</span></span>&nbsp;case&nbsp;now.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">E'</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab281"></a><h3 class="section"> </h3>
+ We can use <span class="inlinecode"><span class="id" title="tactic">inversion</span></span> to re-prove some theorems from
+    <span class="inlinecode"><span class="id" title="var">Tactics.v</span></span>.
+
+<div class="paragraph"> </div>
+
+    Note that <span class="inlinecode"><span class="id" title="tactic">inversion</span></span> also works on equality propositions. 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Theorem one_not_even : ~ ev 1.
+Proof.
+  intros H. apply ev_inversion in H.  destruct H as [ | [m [Hm _]]].
+  - discriminate H.
+  - discriminate Hm.
+Qed.
+
+Theorem one_not_even&#x27; : ~ ev 1.
+Proof. intros H. inversion H. Qed.
+
+Theorem SSSSev__even : forall n,
+  ev (S (S (S (S n)))) -&gt; ev n.
+Proof.
+   Admitted.
+
+Theorem ev5_nonsense :
+  ev 5 -&gt; 2 + 2 = 9.
+Proof.
+   Admitted.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">inversion_ex<sub>1</sub></span> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">o</span> : <span class="id" title="var">nat</span>),<br/>
+&nbsp;&nbsp;[<span class="id" title="var">n</span>; <span class="id" title="var">m</span>] = [<span class="id" title="var">o</span>; <span class="id" title="var">o</span>] → [<span class="id" title="var">n</span>] = [<span class="id" title="var">m</span>].<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">o</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">inversion</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">inversion_ex<sub>2</sub></span> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">S</span> <span class="id" title="var">n</span> = <span class="id" title="var">O</span> → 2 + 2 = 5.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">contra</span>. <span class="id" title="tactic">inversion</span> <span class="id" title="var">contra</span>. <span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab282"></a><h3 class="section"> </h3>
+ The <span class="inlinecode"><span class="id" title="tactic">inversion</span></span> tactic works on any <span class="inlinecode"><span class="id" title="var">H</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">P</span></span> where
+    <span class="inlinecode"><span class="id" title="var">P</span></span> is defined <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span>ly:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> For each constructor of <span class="inlinecode"><span class="id" title="var">P</span></span>, make a subgoal where <span class="inlinecode"><span class="id" title="var">H</span></span> is
+        constrained by the form of this constructor.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Discard contradictory subgoals (such as <span class="inlinecode"><span class="id" title="var">ev_0</span></span> above).
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Generate auxiliary equalities (as with <span class="inlinecode"><span class="id" title="var">ev_SS</span></span> above). 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+<a id="lab283"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ Let's try to show that our new notion of evenness implies
+    our earlier notion (the one based on <span class="inlinecode"><span class="id" title="var">double</span></span>). 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">ev_Even_firsttry</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">ev</span> <span class="id" title="var">n</span> → <span class="id" title="var">Even</span> <span class="id" title="var">n</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;WORK&nbsp;IN&nbsp;CLASS&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab284"></a><h2 class="section">Induction on Evidence</h2>
+
+<div class="paragraph"> </div>
+
+ If this story feels familiar, it is no coincidence: We
+    encountered similar problems in the <a href="Induction.html"><span class="inlineref">Induction</span></a> chapter, when
+    trying to use case analysis to prove results that required
+    induction.  And once again the solution is... induction! 
+<div class="paragraph"> </div>
+
+ Let's try proving that lemma again: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">ev_Even</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">ev</span> <span class="id" title="var">n</span> → <span class="id" title="var">Even</span> <span class="id" title="var">n</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">Even</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">E</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">E</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">n'</span> <span class="id" title="var">E'</span> <span class="id" title="var">IH</span>].<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E&nbsp;=&nbsp;ev_0&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">∃</span> 0. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E&nbsp;=&nbsp;ev_SS&nbsp;n'&nbsp;E',&nbsp;&nbsp;with&nbsp;IH&nbsp;:&nbsp;Even&nbsp;n'&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">IH</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">k</span> <span class="id" title="var">Hk</span>]. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hk</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">∃</span> (<span class="id" title="var">S</span> <span class="id" title="var">k</span>). <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab285"></a><h1 class="section">Case Study: Regular Expressions</h1>
+
+<div class="paragraph"> </div>
+
+<a id="lab286"></a><h2 class="section">Definitions</h2>
+
+<div class="paragraph"> </div>
+
+ Regular expressions are a natural language for describing sets of
+    strings.  Their syntax is defined as follows: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Theorem ev_Even_iff : forall n,
+  ev n &lt;-&gt; Even n.
+Proof.
+  intros n. split.
+  -  apply ev_Even.
+  -  unfold Even. intros [k Hk]. rewrite Hk. apply ev_double.
+Qed.
+
+Theorem ev_sum : forall n m, ev n -&gt; ev m -&gt; ev (n + m).
+Proof.
+   Admitted.
+
+Theorem ev_ev__ev : forall n m,
+  ev (n+m) -&gt; ev n -&gt; ev m.
+  
+Proof.
+   Admitted.
+
+Theorem ev_plus_plus : forall n m p,
+  ev (n+m) -&gt; ev (n+p) -&gt; ev (m+p).
+Proof.
+   Admitted.
+
+Module clos_refl_trans_remainder.
+Inductive clos_refl_trans {X: Type} (R: X-&gt;X-&gt;Prop) : X-&gt;X-&gt;Prop :=
+  | rt_step (x y : X) :
+      R x y -&gt;
+      clos_refl_trans R x y
+  | rt_refl (x : X) :
+      clos_refl_trans R x x
+  | rt_trans (x y z : X) :
+      clos_refl_trans R x y -&gt;
+      clos_refl_trans R y z -&gt;
+      clos_refl_trans R x z.
+End clos_refl_trans_remainder.
+
+Definition isDiagonal {X : Type} (R: X -&gt; X -&gt; Prop) :=
+  forall x y, R x y -&gt; x = y.
+
+Lemma closure_of_diagonal_is_diagonal: forall X (R: X -&gt; X -&gt; Prop),
+  isDiagonal R -&gt;
+  isDiagonal (clos_refl_trans R).
+Proof.
+  intros X R IsDiag x y H.
+  induction H as [ x y H | x | x y z H IH H&#x27; IH&#x27; ].
+  
+  - specialize (IsDiag x y H). rewrite -&gt; IsDiag. reflexivity.
+  - reflexivity.
+  - 
+   rewrite -&gt; IH, &lt;- IH&#x27;. reflexivity.
+Qed.
+
+Inductive ev&#x27; : nat -&gt; Prop :=
+  | ev&#x27;_0 : ev&#x27; 0
+  | ev&#x27;_2 : ev&#x27; 2
+  | ev&#x27;_sum n m (Hn : ev&#x27; n) (Hm : ev&#x27; m) : ev&#x27; (n + m).
+
+Theorem ev&#x27;_ev : forall n, ev&#x27; n &lt;-&gt; ev n.
+Proof.
+  Admitted.
+
+Module Perm3Reminder.
+
+Inductive Perm3 {X : Type} : list X -&gt; list X -&gt; Prop :=
+  | perm3_swap12 (a b c : X) :
+      Perm3 [a;b;c] [b;a;c]
+  | perm3_swap23 (a b c : X) :
+      Perm3 [a;b;c] [a;c;b]
+  | perm3_trans (l1 l2 l3 : list X) :
+      Perm3 l1 l2 -&gt; Perm3 l2 l3 -&gt; Perm3 l1 l3.
+
+End Perm3Reminder.
+
+Lemma Perm3_symm : forall (X : Type) (l1 l2 : list X),
+  Perm3 l1 l2 -&gt; Perm3 l2 l1.
+Proof.
+  intros X l1 l2 E.
+  induction E as [a b c | a b c | l1 l2 l3 E12 IH12 E23 IH23].
+  - apply perm3_swap12.
+  - apply perm3_swap23.
+  - apply (perm3_trans _ l2 _).
+    * apply IH23.
+    * apply IH12.
+Qed.
+
+Lemma Perm3_In : forall (X : Type) (x : X) (l1 l2 : list X),
+    Perm3 l1 l2 -&gt; In x l1 -&gt; In x l2.
+Proof.
+   Admitted.
+
+Lemma Perm3_NotIn : forall (X : Type) (x : X) (l1 l2 : list X),
+    Perm3 l1 l2 -&gt; ~In x l1 -&gt; ~In x l2.
+Proof.
+   Admitted.
+
+Example Perm3_example2 : ~ Perm3 [1;2;3] [1;2;4].
+Proof.
+   Admitted.
+
+Module Playground.
+
+Inductive le : nat -&gt; nat -&gt; Prop :=
+  | le_n (n : nat)                : le n n
+  | le_S (n m : nat) (H : le n m) : le n (S m).
+
+Notation &quot;n &lt;= m&quot; := (le n m).
+
+Theorem test_le1 :
+  3 &lt;= 3.
+Proof.
+  
+  apply le_n.  Qed.
+
+Theorem test_le2 :
+  3 &lt;= 6.
+Proof.
+  
+  apply le_S. apply le_S. apply le_S. apply le_n.  Qed.
+
+Theorem test_le3 :
+  (2 &lt;= 1) -&gt; 2 + 2 = 5.
+Proof.
+  
+  intros H. inversion H. inversion H2.  Qed.
+
+Definition lt (n m : nat) := le (S n) m.
+
+Notation &quot;n &lt; m&quot; := (lt n m).
+
+Definition ge (m n : nat) : Prop := le n m.
+Notation &quot;m &gt;= n&quot; := (ge m n).
+
+End Playground.
+
+Lemma le_trans : forall m n o, m &lt;= n -&gt; n &lt;= o -&gt; m &lt;= o.
+Proof.
+   Admitted.
+
+Theorem O_le_n : forall n,
+  0 &lt;= n.
+Proof.
+   Admitted.
+
+Theorem n_le_m__Sn_le_Sm : forall n m,
+  n &lt;= m -&gt; S n &lt;= S m.
+Proof.
+   Admitted.
+
+Theorem Sn_le_Sm__n_le_m : forall n m,
+  S n &lt;= S m -&gt; n &lt;= m.
+Proof.
+   Admitted.
+
+Theorem le_plus_l : forall a b,
+  a &lt;= a + b.
+Proof.
+   Admitted.
+
+Theorem plus_le : forall n1 n2 m,
+  n1 + n2 &lt;= m -&gt;
+  n1 &lt;= m /\ n2 &lt;= m.
+Proof.
+  Admitted.
+
+Theorem plus_le_cases : forall n m p q,
+  n + m &lt;= p + q -&gt; n &lt;= p \/ m &lt;= q.
+  
+Proof.
+ Admitted.
+
+Theorem plus_le_compat_l : forall n m p,
+  n &lt;= m -&gt;
+  p + n &lt;= p + m.
+Proof.
+   Admitted.
+
+Theorem plus_le_compat_r : forall n m p,
+  n &lt;= m -&gt;
+  n + p &lt;= m + p.
+Proof.
+   Admitted.
+
+Theorem le_plus_trans : forall n m p,
+  n &lt;= m -&gt;
+  n &lt;= m + p.
+Proof.
+   Admitted.
+
+Theorem lt_ge_cases : forall n m,
+  n &lt; m \/ n &gt;= m.
+Proof.
+   Admitted.
+
+Theorem n_lt_m__n_le_m : forall n m,
+  n &lt; m -&gt;
+  n &lt;= m.
+Proof.
+   Admitted.
+
+Theorem plus_lt : forall n1 n2 m,
+  n1 + n2 &lt; m -&gt;
+  n1 &lt; m /\ n2 &lt; m.
+Proof.
+ Admitted.
+
+Theorem leb_sound : forall n m,
+  n &lt;=? m = true -&gt; n &lt;= m.
+Proof.
+   Admitted.
+
+Theorem leb_complete : forall n m,
+  n &lt;= m -&gt;
+  n &lt;=? m = true.
+Proof.
+   Admitted.
+
+Theorem leb_iff : forall n m,
+  n &lt;=? m = true &lt;-&gt; n &lt;= m.
+Proof.
+   Admitted.
+
+Theorem leb_true_trans : forall n m o,
+  n &lt;=? m = true -&gt; m &lt;=? o = true -&gt; n &lt;=? o = true.
+Proof.
+   Admitted.
+
+Module R.
+
+Inductive R : nat -&gt; nat -&gt; nat -&gt; Prop :=
+  | c1                                     : R 0     0     0
+  | c2 m n o (H : R m     n     o        ) : R (S m) n     (S o)
+  | c3 m n o (H : R m     n     o        ) : R m     (S n) (S o)
+  | c4 m n o (H : R (S m) (S n) (S (S o))) : R m     n     o
+  | c5 m n o (H : R m     n     o        ) : R n     m     o.
+
+Definition manual_grade_for_R_provability : option (nat*string) := None.
+
+Definition fR : nat -&gt; nat -&gt; nat
+  . Admitted.
+
+Theorem R_equiv_fR : forall m n o, R m n o &lt;-&gt; fR m n = o.
+Proof.
+ Admitted.
+
+End R.
+
+Inductive subseq : list nat -&gt; list nat -&gt; Prop :=
+
+.
+
+Theorem subseq_refl : forall (l : list nat), subseq l l.
+Proof.
+   Admitted.
+
+Theorem subseq_app : forall (l1 l2 l3 : list nat),
+  subseq l1 l2 -&gt;
+  subseq l1 (l2 ++ l3).
+Proof.
+   Admitted.
+
+Theorem subseq_trans : forall (l1 l2 l3 : list nat),
+  subseq l1 l2 -&gt;
+  subseq l2 l3 -&gt;
+  subseq l1 l3.
+Proof.
+  
+   Admitted.
+
+Inductive total_relation : nat -&gt; nat -&gt; Prop :=
+  
+.
+
+Theorem total_relation_is_total : forall n m, total_relation n m.
+  Proof.
+   Admitted.
+
+Inductive empty_relation : nat -&gt; nat -&gt; Prop :=
+  
+.
+
+Theorem empty_relation_is_empty : forall n m, ~ empty_relation n m.
+  Proof.
+   Admitted.</div></div>
+<h3 class="section slidesplit"> </h3>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">reg_exp</span> (<span class="id" title="var">T</span> : <span class="id" title="keyword">Type</span>) : <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">EmptySet</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">EmptyStr</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">Char</span> (<span class="id" title="var">t</span> : <span class="id" title="var">T</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">App</span> (<span class="id" title="var">r<sub>1</sub></span> <span class="id" title="var">r<sub>2</sub></span> : <span class="id" title="var">reg_exp</span> <span class="id" title="var">T</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">Union</span> (<span class="id" title="var">r<sub>1</sub></span> <span class="id" title="var">r<sub>2</sub></span> : <span class="id" title="var">reg_exp</span> <span class="id" title="var">T</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">Star</span> (<span class="id" title="var">r</span> : <span class="id" title="var">reg_exp</span> <span class="id" title="var">T</span>).<br/><hr class='doublespaceincode'/>
+</div>
+
+<div class="doc">
+Note that this definition is <i>polymorphic</i>: Regular
+    expressions in <span class="inlinecode"><span class="id" title="var">reg_exp</span></span> <span class="inlinecode"><span class="id" title="var">T</span></span> describe strings with characters drawn
+    from <span class="inlinecode"><span class="id" title="var">T</span></span> -- which in this exercise we represent as <i>lists</i> with
+    elements from <span class="inlinecode"><span class="id" title="var">T</span></span>. 
+<div class="paragraph"> </div>
+
+<a id="lab287"></a><h3 class="section"> </h3>
+ We connect regular expressions and strings by defining when a
+    regular expression <i>matches</i> some string.
+
+<div class="paragraph"> </div>
+
+    Informally this looks as follows:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> The regular expression <span class="inlinecode"><span class="id" title="var">EmptySet</span></span> does not match any string.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">EmptyStr</span></span> matches the empty string <span class="inlinecode">[]</span>.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="var">Char</span></span> <span class="inlinecode"><span class="id" title="var">x</span></span> matches the one-character string <span class="inlinecode">[<span class="id" title="var">x</span>]</span>.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> If <span class="inlinecode"><span class="id" title="var">re<sub>1</sub></span></span> matches <span class="inlinecode"><span class="id" title="var">s<sub>1</sub></span></span>, and <span class="inlinecode"><span class="id" title="var">re<sub>2</sub></span></span> matches <span class="inlinecode"><span class="id" title="var">s<sub>2</sub></span></span>,
+        then <span class="inlinecode"><span class="id" title="var">App</span></span> <span class="inlinecode"><span class="id" title="var">re<sub>1</sub></span></span> <span class="inlinecode"><span class="id" title="var">re<sub>2</sub></span></span> matches <span class="inlinecode"><span class="id" title="var">s<sub>1</sub></span></span> <span class="inlinecode">++</span> <span class="inlinecode"><span class="id" title="var">s<sub>2</sub></span></span>.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> If at least one of <span class="inlinecode"><span class="id" title="var">re<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" title="var">re<sub>2</sub></span></span> matches <span class="inlinecode"><span class="id" title="var">s</span></span>,
+        then <span class="inlinecode"><span class="id" title="var">Union</span></span> <span class="inlinecode"><span class="id" title="var">re<sub>1</sub></span></span> <span class="inlinecode"><span class="id" title="var">re<sub>2</sub></span></span> matches <span class="inlinecode"><span class="id" title="var">s</span></span>.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Finally, if we can write some string <span class="inlinecode"><span class="id" title="var">s</span></span> as the concatenation
+        of a sequence of strings <span class="inlinecode"><span class="id" title="var">s</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">s_1</span></span> <span class="inlinecode">++</span> <span class="inlinecode">...</span> <span class="inlinecode">++</span> <span class="inlinecode"><span class="id" title="var">s_k</span></span>, and the
+        expression <span class="inlinecode"><span class="id" title="var">re</span></span> matches each one of the strings <span class="inlinecode"><span class="id" title="var">s_i</span></span>,
+        then <span class="inlinecode"><span class="id" title="var">Star</span></span> <span class="inlinecode"><span class="id" title="var">re</span></span> matches <span class="inlinecode"><span class="id" title="var">s</span></span>.
+
+<div class="paragraph"> </div>
+
+        In particular, the sequence of strings may be empty, so
+        <span class="inlinecode"><span class="id" title="var">Star</span></span> <span class="inlinecode"><span class="id" title="var">re</span></span> always matches the empty string <span class="inlinecode">[]</span> no matter what
+        <span class="inlinecode"><span class="id" title="var">re</span></span> is. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+<a id="lab288"></a><h3 class="section"> </h3>
+ We can easily translate this intuition into a set of rules,
+    where we write <span class="inlinecode"><span class="id" title="var">s</span></span> <span class="inlinecode">=~</span> <span class="inlinecode"><span class="id" title="var">re</span></span> to say that <span class="inlinecode"><span class="id" title="var">re</span></span> matches <span class="inlinecode"><span class="id" title="var">s</span></span>:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (MEmpty) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">[] =~ EmptyStr</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (MChar) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">[x] =~ (Char x)</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">s<sub>1</sub> =~ re<sub>1</sub>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s<sub>2</sub> =~ re<sub>2</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (MApp) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">(s<sub>1</sub> ++ s<sub>2</sub>) =~ (App re<sub>1</sub> re<sub>2</sub>)</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">s<sub>1</sub> =~ re<sub>1</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (MUnionL) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">s<sub>1</sub> =~ (Union re<sub>1</sub> re<sub>2</sub>)</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">s<sub>2</sub> =~ re<sub>2</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (MUnionR) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">s<sub>2</sub> =~ (Union re<sub>1</sub> re<sub>2</sub>)</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (MStar0) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">[] =~ (Star re)</td>
+  <td></td>
+</tr>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">s<sub>1</sub> =~ re</td>
+  <td></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">s<sub>2</sub> =~ (Star re)</td>
+  <td class="infrulenamecol" rowspan="3">
+    (MStarApp) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">(s<sub>1</sub> ++ s<sub>2</sub>) =~ (Star re)</td>
+  <td></td>
+</tr>
+</table></center>
+<div class="paragraph"> </div>
+
+<a id="lab289"></a><h3 class="section"> </h3>
+ This directly corresponds to the following <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span> definition.
+    We use the notation <span class="inlinecode"><span class="id" title="var">s</span></span> <span class="inlinecode">=~</span> <span class="inlinecode"><span class="id" title="var">re</span></span> in  place of <span class="inlinecode"><span class="id" title="var">exp_match</span></span> <span class="inlinecode"><span class="id" title="var">s</span></span> <span class="inlinecode"><span class="id" title="var">re</span></span>.
+    (By "reserving" the notation before defining the <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span>,
+    we can use it in the definition.) 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Arguments EmptySet {T}.
+Arguments EmptyStr {T}.
+Arguments Char {T} _.
+Arguments App {T} _ _.
+Arguments Union {T} _ _.
+Arguments Star {T} _.</div></div>
+<h3 class="section slidesplit"> </h3>
+<div class="code">
+
+<span class="id" title="keyword">Reserved Notation</span> &quot;s =~ re" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 80).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">exp_match</span> {<span class="id" title="var">T</span>} : <span class="id" title="var">list</span> <span class="id" title="var">T</span> → <span class="id" title="var">reg_exp</span> <span class="id" title="var">T</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">MEmpty</span> : [] =~ <span class="id" title="var">EmptyStr</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">MChar</span> <span class="id" title="var">x</span> : [<span class="id" title="var">x</span>] =~ (<span class="id" title="var">Char</span> <span class="id" title="var">x</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">MApp</span> <span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub></span> <span class="id" title="var">re<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">H<sub>1</sub></span> : <span class="id" title="var">s<sub>1</sub></span> =~ <span class="id" title="var">re<sub>1</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">H<sub>2</sub></span> : <span class="id" title="var">s<sub>2</sub></span> =~ <span class="id" title="var">re<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: (<span class="id" title="var">s<sub>1</sub></span> ++ <span class="id" title="var">s<sub>2</sub></span>) =~ (<span class="id" title="var">App</span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">re<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">MUnionL</span> <span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">re<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">H<sub>1</sub></span> : <span class="id" title="var">s<sub>1</sub></span> =~ <span class="id" title="var">re<sub>1</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="var">s<sub>1</sub></span> =~ (<span class="id" title="var">Union</span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">re<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">MUnionR</span> <span class="id" title="var">s<sub>2</sub></span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">re<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">H<sub>2</sub></span> : <span class="id" title="var">s<sub>2</sub></span> =~ <span class="id" title="var">re<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="var">s<sub>2</sub></span> =~ (<span class="id" title="var">Union</span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">re<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">MStar0</span> <span class="id" title="var">re</span> : [] =~ (<span class="id" title="var">Star</span> <span class="id" title="var">re</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">MStarApp</span> <span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub></span> <span class="id" title="var">re</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">H<sub>1</sub></span> : <span class="id" title="var">s<sub>1</sub></span> =~ <span class="id" title="var">re</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">H<sub>2</sub></span> : <span class="id" title="var">s<sub>2</sub></span> =~ (<span class="id" title="var">Star</span> <span class="id" title="var">re</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: (<span class="id" title="var">s<sub>1</sub></span> ++ <span class="id" title="var">s<sub>2</sub></span>) =~ (<span class="id" title="var">Star</span> <span class="id" title="var">re</span>)<br/>
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">where</span> &quot;s =~ re" := (<span class="id" title="var">exp_match</span> <span class="id" title="var">s</span> <span class="id" title="var">re</span>).<br/><hr class='doublespaceincode'/>
+ <!-- /quiz -->
+</div><div class="quiz">
+
+
+<div class="doc">
+Notice that this clause in our informal definition...
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> "The expression <span class="inlinecode"><span class="id" title="var">EmptySet</span></span> does not match any string."
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    ... is not explicitly reflected in the above definition.  Do we
+    need to add something?
+
+<div class="paragraph"> </div>
+
+   (A) Yes, we should add a rule for this.
+
+<div class="paragraph"> </div>
+
+   (B) No, one of the other rules already covers this case.
+
+<div class="paragraph"> </div>
+
+   (C) No, the <i>lack</i> of a rule actually gives us the behavior we
+       want.
+
+</div>
+</div> <!-- /quiz -->
+
+<div class="doc">
+<a id="lab290"></a><h2 class="section">Examples</h2>
+
+<div class="paragraph"> </div>
+
+<a id="lab291"></a><h3 class="section"> </h3>
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Example</span> <span class="id" title="var">reg_exp_ex<sub>1</sub></span> : [1] =~ <span class="id" title="var">Char</span> 1.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">MChar</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">reg_exp_ex<sub>2</sub></span> : [1; 2] =~ <span class="id" title="var">App</span> (<span class="id" title="var">Char</span> 1) (<span class="id" title="var">Char</span> 2).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<span class="id" title="var">MApp</span> [1]).<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="var">MChar</span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="var">MChar</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Example</span> <span class="id" title="var">reg_exp_ex<sub>3</sub></span> : ¬([1; 2] =~ <span class="id" title="var">Char</span> 1).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">inversion</span> <span class="id" title="var">H</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab292"></a><h3 class="section"> </h3>
+ Something more interesting: 
+</div>
+<div class="code"><span class="HIDEFROMHTML jscoq-fill"> Fixpoint reg_exp_of_list {T} (l : list T) :=
+  match l with
+  | [] =&gt; EmptyStr
+  | x :: l&#x27; =&gt; App (Char x) (reg_exp_of_list l&#x27;)
+  end.
+
+Example reg_exp_ex4 : [1; 2; 3] =~ reg_exp_of_list [1; 2; 3].
+Proof.
+  simpl. apply (MApp [1]).
+  { apply MChar. }
+  apply (MApp [2]).
+  { apply MChar. }
+  apply (MApp [3]).
+  { apply MChar. }
+  apply MEmpty.
+Qed. </span>
+
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">MStar1</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">T</span> <span class="id" title="var">s</span> (<span class="id" title="var">re</span> : <span class="id" title="var">reg_exp</span> <span class="id" title="var">T</span>) ,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">s</span> =~ <span class="id" title="var">re</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">s</span> =~ <span class="id" title="var">Star</span> <span class="id" title="var">re</span>.<br/>
+<span class="comment">(*&nbsp;WORK&nbsp;IN&nbsp;CLASS&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab293"></a><h3 class="section"> </h3>
+ Naturally, proofs about <span class="inlinecode"><span class="id" title="var">exp_match</span></span> often require
+    induction (on evidence!). 
+<div class="paragraph"> </div>
+
+ For example, suppose we want to prove the following intuitive
+    fact: If a string <span class="inlinecode"><span class="id" title="var">s</span></span> is matched by a regular expression <span class="inlinecode"><span class="id" title="var">re</span></span>,
+    then all elements of <span class="inlinecode"><span class="id" title="var">s</span></span> must occur as character literals
+    somewhere in <span class="inlinecode"><span class="id" title="var">re</span></span>.
+
+<div class="paragraph"> </div>
+
+    To state this as a theorem, we first define a function <span class="inlinecode"><span class="id" title="var">re_chars</span></span>
+    that lists all characters that occur in a regular expression: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Lemma EmptySet_is_empty : forall T (s : list T),
+  ~ (s =~ EmptySet).
+Proof.
+   Admitted.
+
+Lemma MUnion&#x27; : forall T (s : list T) (re1 re2 : reg_exp T),
+  s =~ re1 \/ s =~ re2 -&gt;
+  s =~ Union re1 re2.
+Proof.
+   Admitted.
+
+Lemma MStar&#x27; : forall T (ss : list (list T)) (re : reg_exp T),
+  (forall s, In s ss -&gt; s =~ re) -&gt;
+  fold app ss [] =~ Star re.
+Proof.
+   Admitted.
+
+Definition EmptyStr&#x27; {T:Type} := @Star T (EmptySet).</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">re_chars</span> {<span class="id" title="var">T</span>} (<span class="id" title="var">re</span> : <span class="id" title="var">reg_exp</span> <span class="id" title="var">T</span>) : <span class="id" title="var">list</span> <span class="id" title="var">T</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">re</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">EmptySet</span> ⇒ []<br/>
+&nbsp;&nbsp;| <span class="id" title="var">EmptyStr</span> ⇒ []<br/>
+&nbsp;&nbsp;| <span class="id" title="var">Char</span> <span class="id" title="var">x</span> ⇒ [<span class="id" title="var">x</span>]<br/>
+&nbsp;&nbsp;| <span class="id" title="var">App</span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">re<sub>2</sub></span> ⇒ <span class="id" title="var">re_chars</span> <span class="id" title="var">re<sub>1</sub></span> ++ <span class="id" title="var">re_chars</span> <span class="id" title="var">re<sub>2</sub></span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">Union</span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">re<sub>2</sub></span> ⇒ <span class="id" title="var">re_chars</span> <span class="id" title="var">re<sub>1</sub></span> ++ <span class="id" title="var">re_chars</span> <span class="id" title="var">re<sub>2</sub></span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">Star</span> <span class="id" title="var">re</span> ⇒ <span class="id" title="var">re_chars</span> <span class="id" title="var">re</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+</div>
+
+<div class="doc">
+<a id="lab294"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ Now, the main theorem: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">in_re_match</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">T</span> (<span class="id" title="var">s</span> : <span class="id" title="var">list</span> <span class="id" title="var">T</span>) (<span class="id" title="var">re</span> : <span class="id" title="var">reg_exp</span> <span class="id" title="var">T</span>) (<span class="id" title="var">x</span> : <span class="id" title="var">T</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">s</span> =~ <span class="id" title="var">re</span> →<br/>
+&nbsp;&nbsp;<span class="id" title="var">In</span> <span class="id" title="var">x</span> <span class="id" title="var">s</span> →<br/>
+&nbsp;&nbsp;<span class="id" title="var">In</span> <span class="id" title="var">x</span> (<span class="id" title="var">re_chars</span> <span class="id" title="var">re</span>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">T</span> <span class="id" title="var">s</span> <span class="id" title="var">re</span> <span class="id" title="var">x</span> <span class="id" title="var">Hmatch</span> <span class="id" title="var">Hin</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">Hmatch</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">as</span> [| <span class="id" title="var">x'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub></span> <span class="id" title="var">re<sub>2</sub></span> <span class="id" title="var">Hmatch1</span> <span class="id" title="var">IH<sub>1</sub></span> <span class="id" title="var">Hmatch2</span> <span class="id" title="var">IH<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">re<sub>2</sub></span> <span class="id" title="var">Hmatch</span> <span class="id" title="var">IH</span> | <span class="id" title="var">s<sub>2</sub></span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">re<sub>2</sub></span> <span class="id" title="var">Hmatch</span> <span class="id" title="var">IH</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">re</span> | <span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub></span> <span class="id" title="var">re</span> <span class="id" title="var">Hmatch1</span> <span class="id" title="var">IH<sub>1</sub></span> <span class="id" title="var">Hmatch2</span> <span class="id" title="var">IH<sub>2</sub></span>].<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;WORK&nbsp;IN&nbsp;CLASS&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab295"></a><h2 class="section">The <span class="inlinecode"><span class="id" title="var">remember</span></span> Tactic</h2>
+
+<div class="paragraph"> </div>
+
+ Since the definition of <span class="inlinecode"><span class="id" title="var">exp_match</span></span> has a recursive
+    structure, we might expect that proofs involving regular
+    expressions will often require induction on evidence. 
+<div class="paragraph"> </div>
+
+ One potentially confusing feature of the <span class="inlinecode"><span class="id" title="tactic">induction</span></span> tactic is
+    that it will let you try to perform an induction over a term that
+    isn't sufficiently general.  The effect of this is to lose
+    information (much as <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> without an <span class="inlinecode"><span class="id" title="var">eqn</span>:</span> clause can do),
+    and leave you unable to complete the proof.  Here's an example: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Fixpoint re_not_empty {T : Type} (re : reg_exp T) : bool
+  . Admitted.
+
+Lemma re_not_empty_correct : forall T (re : reg_exp T),
+  (exists s, s =~ re) &lt;-&gt; re_not_empty re = true.
+Proof.
+   Admitted.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">star_app</span>: <span class="id" title="keyword">∀</span> <span class="id" title="var">T</span> (<span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub></span> : <span class="id" title="var">list</span> <span class="id" title="var">T</span>) (<span class="id" title="var">re</span> : <span class="id" title="var">reg_exp</span> <span class="id" title="var">T</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">s<sub>1</sub></span> =~ <span class="id" title="var">Star</span> <span class="id" title="var">re</span> →<br/>
+&nbsp;&nbsp;<span class="id" title="var">s<sub>2</sub></span> =~ <span class="id" title="var">Star</span> <span class="id" title="var">re</span> →<br/>
+&nbsp;&nbsp;<span class="id" title="var">s<sub>1</sub></span> ++ <span class="id" title="var">s<sub>2</sub></span> =~ <span class="id" title="var">Star</span> <span class="id" title="var">re</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">T</span> <span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub></span> <span class="id" title="var">re</span> <span class="id" title="var">H<sub>1</sub></span>.<br/>
+</div>
+
+<div class="doc">
+Here is a naive first attempt at setting up the
+    induction. 
+</div>
+<div class="code">
+
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">H<sub>1</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">as</span> [|<span class="id" title="var">x'</span>|<span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub>'</span> <span class="id" title="var">re<sub>2</sub></span> <span class="id" title="var">Hmatch1</span> <span class="id" title="var">IH<sub>1</sub></span> <span class="id" title="var">Hmatch2</span> <span class="id" title="var">IH<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">re<sub>2</sub></span> <span class="id" title="var">Hmatch</span> <span class="id" title="var">IH</span>|<span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub>'</span> <span class="id" title="var">re<sub>2</sub></span> <span class="id" title="var">Hmatch</span> <span class="id" title="var">IH</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<span class="id" title="var">re''</span>|<span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub>'</span> <span class="id" title="var">re''</span> <span class="id" title="var">Hmatch1</span> <span class="id" title="var">IH<sub>1</sub></span> <span class="id" title="var">Hmatch2</span> <span class="id" title="var">IH<sub>2</sub></span>].<br/>
+</div>
+
+<div class="doc">
+<a id="lab296"></a><h3 class="section"> </h3>
+ We can get through the first case... 
+</div>
+<div class="code">
+
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;MEmpty&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">H</span>.<br/>
+</div>
+
+<div class="doc">
+... but most cases get stuck.  For <span class="inlinecode"><span class="id" title="var">MChar</span></span>, for instance, we
+    must show
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">s<sub>2</sub></span>     =~ <span class="id" title="var">Char</span> <span class="id" title="var">x'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">x'</span>::<span class="id" title="var">s<sub>2</sub></span> =~ <span class="id" title="var">Char</span> <span class="id" title="var">x'</span>
+</span>    which is clearly impossible. 
+</div>
+<div class="code">
+
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;MChar.&nbsp;*)</span> <span class="id" title="tactic">intros</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">simpl</span>. <span class="comment">(*&nbsp;Stuck...&nbsp;*)</span><br/>
+<span class="id" title="keyword">Abort</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab297"></a><h3 class="section"> </h3>
+ The problem here is that <span class="inlinecode"><span class="id" title="tactic">induction</span></span> over a Prop hypothesis only
+    works properly with hypotheses that are "fully general," i.e.,
+    ones in which all the arguments are just variables, as opposed to more
+    specific expressions like <span class="inlinecode"><span class="id" title="var">Star</span></span> <span class="inlinecode"><span class="id" title="var">re</span></span>.
+
+<div class="paragraph"> </div>
+
+    A possible, but awkward, way to solve this problem is "manually
+    generalizing" over the problematic expressions by adding
+    explicit equality hypotheses to the lemma: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">star_app</span>: <span class="id" title="keyword">∀</span> <span class="id" title="var">T</span> (<span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub></span> : <span class="id" title="var">list</span> <span class="id" title="var">T</span>) (<span class="id" title="var">re</span> <span class="id" title="var">re'</span> : <span class="id" title="var">reg_exp</span> <span class="id" title="var">T</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">re'</span> = <span class="id" title="var">Star</span> <span class="id" title="var">re</span> →<br/>
+&nbsp;&nbsp;<span class="id" title="var">s<sub>1</sub></span> =~ <span class="id" title="var">re'</span> →<br/>
+&nbsp;&nbsp;<span class="id" title="var">s<sub>2</sub></span> =~ <span class="id" title="var">Star</span> <span class="id" title="var">re</span> →<br/>
+&nbsp;&nbsp;<span class="id" title="var">s<sub>1</sub></span> ++ <span class="id" title="var">s<sub>2</sub></span> =~ <span class="id" title="var">Star</span> <span class="id" title="var">re</span>.<br/>
+</div>
+
+<div class="doc">
+This works, but it makes the statement of the lemma a bit ugly.
+    Fortunately, there is a better way... 
+</div>
+<div class="code">
+<span class="id" title="keyword">Abort</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab298"></a><h3 class="section"> </h3>
+ The tactic <span class="inlinecode"><span class="id" title="var">remember</span></span> <span class="inlinecode"><span class="id" title="var">e</span></span> <span class="inlinecode"><span class="id" title="keyword">as</span></span> <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode"><span class="id" title="var">eqn</span>:<span class="id" title="var">Eq</span></span> causes Rocq to (1) replace all
+    occurrences of the expression <span class="inlinecode"><span class="id" title="var">e</span></span> by the variable <span class="inlinecode"><span class="id" title="var">x</span></span>, and (2) add
+    an equation <span class="inlinecode"><span class="id" title="var">Eq</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">e</span></span> to the context.  Here's how we can use it
+    to show the above result: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">star_app</span>: <span class="id" title="keyword">∀</span> <span class="id" title="var">T</span> (<span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub></span> : <span class="id" title="var">list</span> <span class="id" title="var">T</span>) (<span class="id" title="var">re</span> : <span class="id" title="var">reg_exp</span> <span class="id" title="var">T</span>),<br/>
+&nbsp;&nbsp;<span class="id" title="var">s<sub>1</sub></span> =~ <span class="id" title="var">Star</span> <span class="id" title="var">re</span> →<br/>
+&nbsp;&nbsp;<span class="id" title="var">s<sub>2</sub></span> =~ <span class="id" title="var">Star</span> <span class="id" title="var">re</span> →<br/>
+&nbsp;&nbsp;<span class="id" title="var">s<sub>1</sub></span> ++ <span class="id" title="var">s<sub>2</sub></span> =~ <span class="id" title="var">Star</span> <span class="id" title="var">re</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">T</span> <span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub></span> <span class="id" title="var">re</span> <span class="id" title="var">H<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">remember</span> (<span class="id" title="var">Star</span> <span class="id" title="var">re</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">re'</span> <span class="id" title="var">eqn</span>:<span class="id" title="var">Eq</span>.<br/>
+</div>
+
+<div class="doc">
+We now have <span class="inlinecode"><span class="id" title="var">Eq</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">re'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">Star</span></span> <span class="inlinecode"><span class="id" title="var">re</span></span>. 
+</div>
+<div class="code">
+
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">H<sub>1</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">as</span> [|<span class="id" title="var">x'</span>|<span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub>'</span> <span class="id" title="var">re<sub>2</sub></span> <span class="id" title="var">Hmatch1</span> <span class="id" title="var">IH<sub>1</sub></span> <span class="id" title="var">Hmatch2</span> <span class="id" title="var">IH<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">re<sub>2</sub></span> <span class="id" title="var">Hmatch</span> <span class="id" title="var">IH</span>|<span class="id" title="var">re<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub>'</span> <span class="id" title="var">re<sub>2</sub></span> <span class="id" title="var">Hmatch</span> <span class="id" title="var">IH</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<span class="id" title="var">re''</span>|<span class="id" title="var">s<sub>1</sub></span> <span class="id" title="var">s<sub>2</sub>'</span> <span class="id" title="var">re''</span> <span class="id" title="var">Hmatch1</span> <span class="id" title="var">IH<sub>1</sub></span> <span class="id" title="var">Hmatch2</span> <span class="id" title="var">IH<sub>2</sub></span>].<br/>
+</div>
+
+<div class="doc">
+<a id="lab299"></a><h3 class="section"> </h3>
+ The <span class="inlinecode"><span class="id" title="var">Eq</span></span> is contradictory in most cases, allowing us to
+    conclude immediately. 
+</div>
+<div class="code">
+
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;MEmpty&nbsp;*)</span>  <span class="id" title="tactic">discriminate</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;MChar&nbsp;*)</span>   <span class="id" title="tactic">discriminate</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;MApp&nbsp;*)</span>    <span class="id" title="tactic">discriminate</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;MUnionL&nbsp;*)</span> <span class="id" title="tactic">discriminate</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;MUnionR&nbsp;*)</span> <span class="id" title="tactic">discriminate</span>.<br/>
+</div>
+
+<div class="doc">
+The interesting cases are those that correspond to <span class="inlinecode"><span class="id" title="var">Star</span></span>. 
+</div>
+<div class="code">
+
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;MStar0&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">H</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;MStarApp&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">H<sub>1</sub></span>. <span class="id" title="tactic">rewrite</span> &lt;- <span class="id" title="var">app_assoc</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">MStarApp</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span> <span class="id" title="var">Hmatch1</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span> <span class="id" title="var">IH<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="id" title="tactic">apply</span> <span class="id" title="var">Eq</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="id" title="tactic">apply</span> <span class="id" title="var">H<sub>1</sub></span>.<br/>
+</div>
+
+<div class="doc">
+Note that the induction hypothesis <span class="inlinecode"><span class="id" title="var">IH<sub>2</sub></span></span> on the <span class="inlinecode"><span class="id" title="var">MStarApp</span></span> case
+    mentions an additional premise <span class="inlinecode"><span class="id" title="var">Star</span></span> <span class="inlinecode"><span class="id" title="var">re''</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">Star</span></span> <span class="inlinecode"><span class="id" title="var">re</span></span>, which
+    results from the equality generated by <span class="inlinecode"><span class="id" title="var">remember</span></span>. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab300"></a><h3 class="section"> </h3>
+ The remainder of this section in the full version of the chapter
+    develops an extended exercise on regular expressions, leading up
+    to a proof of the well-known "pumping lemma."
+
+<div class="paragraph"> </div>
+
+    Informally, this lemma states that any sufficiently long string
+    <span class="inlinecode"><span class="id" title="var">s</span></span> matching a regular expression <span class="inlinecode"><span class="id" title="var">re</span></span> can be "pumped" by
+    repeating some middle section of <span class="inlinecode"><span class="id" title="var">s</span></span> an arbitrary number of times
+    to produce a new string also matching <span class="inlinecode"><span class="id" title="var">re</span></span>. 
+</div>
+
+<div class="doc">
+<a id="lab301"></a><h1 class="section">Case Study: Improving Reflection</h1>
+
+<div class="paragraph"> </div>
+
+ We've seen that we often need to relate boolean
+    computations to statements in <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>: 
+</div>
+<div class="code"><span class="HIDEFROMHTML jscoq-fill"> (* </span>
+
+<span class="id" title="keyword">Check</span> <span class="id" title="var">eqb_eq</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n<sub>1</sub></span> <span class="id" title="var">n<sub>2</sub></span>, (<span class="id" title="var">n<sub>1</sub></span> =? <span class="id" title="var">n<sub>2</sub></span>) = <span class="id" title="var">true</span> ↔ <span class="id" title="var">n<sub>1</sub></span> = <span class="id" title="var">n<sub>2</sub></span>.<br/>
+<span class="HIDEFROMHTML jscoq-fill"> *) </span></div>
+
+<div class="doc">
+However, this can result in some tedium in proof scripts. Consider: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Lemma MStar&#x27;&#x27; : forall T (s : list T) (re : reg_exp T),
+  s =~ Star re -&gt;
+  exists ss : list (list T),
+    s = fold app ss []
+    /\ forall s&#x27;, In s&#x27; ss -&gt; s&#x27; =~ re.
+Proof.
+   Admitted.
+
+Module Pumping.
+
+Fixpoint pumping_constant {T} (re : reg_exp T) : nat :=
+  match re with
+  | EmptySet =&gt; 1
+  | EmptyStr =&gt; 1
+  | Char _ =&gt; 2
+  | App re1 re2 =&gt;
+      pumping_constant re1 + pumping_constant re2
+  | Union re1 re2 =&gt;
+      pumping_constant re1 + pumping_constant re2
+  | Star r =&gt; pumping_constant r
+  end.
+
+Lemma pumping_constant_ge_1 :
+  forall T (re : reg_exp T),
+    pumping_constant re &gt;= 1.
+Proof.
+  intros T re. induction re.
+  - 
+    apply le_n.
+  - 
+    apply le_n.
+  - 
+    apply le_S. apply le_n.
+  - 
+    simpl.
+    apply le_trans with (n:=pumping_constant re1).
+    apply IHre1. apply le_plus_l.
+  - 
+    simpl.
+    apply le_trans with (n:=pumping_constant re1).
+    apply IHre1. apply le_plus_l.
+  - 
+    simpl. apply IHre.
+Qed.
+
+Lemma pumping_constant_0_false :
+  forall T (re : reg_exp T),
+    pumping_constant re = 0 -&gt; False.
+Proof.
+  intros T re H.
+  assert (Hp1 : pumping_constant re &gt;= 1).
+  { apply pumping_constant_ge_1. }
+  rewrite H in Hp1. inversion Hp1.
+Qed.
+
+Fixpoint napp {T} (n : nat) (l : list T) : list T :=
+  match n with
+  | 0 =&gt; []
+  | S n&#x27; =&gt; l ++ napp n&#x27; l
+  end.
+
+Lemma napp_plus: forall T (n m : nat) (l : list T),
+  napp (n + m) l = napp n l ++ napp m l.
+Proof.
+  intros T n m l.
+  induction n as [|n IHn].
+  - reflexivity.
+  - simpl. rewrite IHn, app_assoc. reflexivity.
+Qed.
+
+Lemma napp_star :
+  forall T m s1 s2 (re : reg_exp T),
+    s1 =~ re -&gt; s2 =~ Star re -&gt;
+    napp m s1 ++ s2 =~ Star re.
+Proof.
+  intros T m s1 s2 re Hs1 Hs2.
+  induction m.
+  - simpl. apply Hs2.
+  - simpl. rewrite &lt;- app_assoc.
+    apply MStarApp.
+    + apply Hs1.
+    + apply IHm.
+Qed.
+
+Lemma weak_pumping_char : forall (T : Type) (x : T),
+  pumping_constant (Char x) &lt;= length [x] -&gt;
+  exists s1 s2 s3 : list T,
+    [x] = s1 ++ s2 ++ s3 /\
+    s2 &lt;&gt; [ ] /\
+    (forall m : nat, s1 ++ napp m s2 ++ s3 =~ Char x).
+Proof.
+   Admitted.
+
+Lemma weak_pumping_app : forall (T : Type)
+                         (s1 s2 : list T) (re1 re2 : reg_exp T),
+  s1 =~ re1 -&gt;
+  s2 =~ re2 -&gt;
+  (pumping_constant re1 &lt;= length s1 -&gt;
+  exists s2 s3 s4 : list T,
+    s1 = s2 ++ s3 ++ s4 /\
+    s3 &lt;&gt; [ ] /\
+    (forall m : nat, s2 ++ napp m s3 ++ s4 =~ re1)) -&gt;
+  (pumping_constant re2 &lt;= length s2 -&gt;
+    exists s1 s3 s4 : list T,
+      s2 = s1 ++ s3 ++ s4 /\
+      s3 &lt;&gt; [ ] /\
+      (forall m : nat, s1 ++ napp m s3 ++ s4 =~ re2)) -&gt;
+  pumping_constant (App re1 re2) &lt;= length (s1 ++ s2) -&gt;
+  exists s0 s3 s4 : list T,
+    s1 ++ s2 = s0 ++ s3 ++ s4 /\
+    s3 &lt;&gt; [ ] /\
+    (forall m : nat, s0 ++ napp m s3 ++ s4 =~ App re1 re2).
+Proof.
+  simpl. intros T s1 s2 re1 re2 Hmatch1 Hmatch2 IH1 IH2 Hlen.
+  assert (H : pumping_constant re1 &lt;= length s1 \/
+              pumping_constant re2 &lt;= length s2).
+  {
+     admit.
+  }
+   Admitted.
+
+Lemma weak_pumping_union_l : forall T (s1 : list T) (re1 re2 : reg_exp T),
+  s1 =~ re1 -&gt;
+  (pumping_constant re1 &lt;= length s1 -&gt;
+    exists s2 s3 s4 : list T,
+      s1 = s2 ++ s3 ++ s4 /\
+      s3 &lt;&gt; [ ] /\
+      (forall m : nat, s2 ++ napp m s3 ++ s4 =~ re1)) -&gt;
+  pumping_constant (Union re1 re2) &lt;= length s1 -&gt;
+  exists s0 s2 s3 : list T,
+    s1 = s0 ++ s2 ++ s3 /\
+    s2 &lt;&gt; [ ] /\
+    (forall m : nat, s0 ++ napp m s2 ++ s3 =~ Union re1 re2).
+Proof.
+  simpl. intros T s1 re1 re2 Hmatch IH Hlen.
+  assert (H : pumping_constant re1 &lt;= length s1).
+  {
+     admit.
+  }
+   Admitted.
+
+Lemma weak_pumping_union_r : forall T (s2 : list T) (re1 re2 : reg_exp T),
+  s2 =~ re2 -&gt;
+  (pumping_constant re2 &lt;= length s2 -&gt;
+    exists s1 s3 s4 : list T,
+      s2 = s1 ++ s3 ++ s4 /\
+      s3 &lt;&gt; [ ] /\
+      (forall m : nat, s1 ++ napp m s3 ++ s4 =~ re2)) -&gt;
+  pumping_constant (Union re1 re2) &lt;= length s2 -&gt;
+  exists s1 s0 s3 : list T,
+    s2 = s1 ++ s0 ++ s3 /\
+    s0 &lt;&gt; [ ] /\
+    (forall m : nat, s1 ++ napp m s0 ++ s3 =~ Union re1 re2).
+Proof.
+  
+   Admitted.
+
+Lemma weak_pumping_star_zero : forall T (re : reg_exp T),
+  pumping_constant (Star re) &lt;= @length T [] -&gt;
+  exists s1 s2 s3 : list T,
+    [ ] = s1 ++ s2 ++ s3 /\
+    s2 &lt;&gt; [ ] /\
+    (forall m : nat, s1 ++ napp m s2 ++ s3 =~ Star re).
+Proof.
+   Admitted.
+
+Lemma weak_pumping_star_app : forall T (s1 s2 : list T) (re : reg_exp T),
+  s1 =~ re -&gt;
+  s2 =~ Star re -&gt;
+  (pumping_constant re &lt;= length s1 -&gt;
+    exists s2 s3 s4 : list T,
+      s1 = s2 ++ s3 ++ s4
+      /\ s3 &lt;&gt; [ ] /\
+      (forall m : nat, s2 ++ napp m s3 ++ s4 =~ re)) -&gt;
+  (pumping_constant (Star re) &lt;= length s2 -&gt;
+    exists s1 s3 s4 : list T,
+      s2 = s1 ++ s3 ++ s4 /\
+      s3 &lt;&gt; [ ] /\
+      (forall m : nat, s1 ++ napp m s3 ++ s4 =~ Star re)) -&gt;
+  pumping_constant (Star re) &lt;= length (s1 ++ s2) -&gt;
+  exists s0 s3 s4 : list T,
+    s1 ++ s2 = s0 ++ s3 ++ s4 /\
+    s3 &lt;&gt; [ ] /\
+    (forall m : nat, s0 ++ napp m s3 ++ s4 =~ Star re).
+Proof.
+  simpl. intros T s1 s2 re Hmatch1 Hmatch2 IH1 IH2 Hlen.
+  rewrite app_length in *.
+  assert (Hs1re1 : length s1 = 0
+                \/ (length s1 &lt;&gt; 0 /\ length s1 &lt; pumping_constant re)
+                \/ pumping_constant re &lt;= length s1).
+  {
+    destruct s1 as [| h s1&#x27;].
+    -  admit.
+    -  admit.
+  }
+   Admitted.
+
+Lemma weak_pumping : forall T (re : reg_exp T) s,
+  s =~ re -&gt;
+  pumping_constant re &lt;= length s -&gt;
+  exists s1 s2 s3,
+    s = s1 ++ s2 ++ s3 /\
+    s2 &lt;&gt; [] /\
+    forall m, s1 ++ napp m s2 ++ s3 =~ re.
+Proof.
+  intros T re s Hmatch.
+  induction Hmatch
+    as [ | x | s1 re1 s2 re2 Hmatch1 IH1 Hmatch2 IH2
+       | s1 re1 re2 Hmatch IH | s2 re1 re2 Hmatch IH
+       | re | s1 s2 re Hmatch1 IH1 Hmatch2 IH2 ].
+  - 
+    simpl. intros contra. inversion contra.
+  - apply weak_pumping_char.
+  - apply weak_pumping_app; assumption.
+  - apply weak_pumping_union_l; assumption.
+  - apply weak_pumping_union_r; assumption.
+  - apply weak_pumping_star_zero.
+  - apply weak_pumping_star_app; assumption.
+Qed.
+
+Lemma pumping : forall T (re : reg_exp T) s,
+  s =~ re -&gt;
+  pumping_constant re &lt;= length s -&gt;
+  exists s1 s2 s3,
+    s = s1 ++ s2 ++ s3 /\
+    s2 &lt;&gt; [] /\
+    length s1 + length s2 &lt;= pumping_constant re /\
+    forall m, s1 ++ napp m s2 ++ s3 =~ re.
+
+Proof.
+  intros T re s Hmatch.
+  induction Hmatch
+    as [ | x | s1 re1 s2 re2 Hmatch1 IH1 Hmatch2 IH2
+       | s1 re1 re2 Hmatch IH | s2 re1 re2 Hmatch IH
+       | re | s1 s2 re Hmatch1 IH1 Hmatch2 IH2 ].
+  - 
+    simpl. intros contra. inversion contra.
+   Admitted.
+
+End Pumping.</div></div>
+<h3 class="section slidesplit"> </h3>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">filter_not_empty_In</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">l</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">filter</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> ⇒ <span class="id" title="var">n</span> =? <span class="id" title="var">x</span>) <span class="id" title="var">l</span> ≠ [] → <span class="id" title="var">In</span> <span class="id" title="var">n</span> <span class="id" title="var">l</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">l</span>. <span class="id" title="tactic">induction</span> <span class="id" title="var">l</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">m</span> <span class="id" title="var">l'</span> <span class="id" title="var">IHl'</span>].<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;l&nbsp;=&nbsp;nil&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;l&nbsp;=&nbsp;m&nbsp;::&nbsp;l'&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">destruct</span> (<span class="id" title="var">n</span> =? <span class="id" title="var">m</span>) <span class="id" title="var">eqn</span>:<span class="id" title="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;n&nbsp;=?&nbsp;m&nbsp;=&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">_</span>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">eqb_eq</span> <span class="id" title="keyword">in</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">left</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;n&nbsp;=?&nbsp;m&nbsp;=&nbsp;false&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">H'</span>. <span class="id" title="tactic">right</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">IHl'</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">H'</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+The first subcase (where <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=?</span> <span class="inlinecode"><span class="id" title="var">m</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">true</span></span>) is awkward
+    because we have to explicitly "switch worlds."
+
+<div class="paragraph"> </div>
+
+    It would be annoying to have to do this kind of thing all the
+    time. 
+<div class="paragraph"> </div>
+
+<a id="lab302"></a><h3 class="section"> </h3>
+ We can streamline this sort of reasoning by defining an inductive
+    proposition that yields a better case-analysis principle for <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=?</span>
+    <span class="inlinecode"><span class="id" title="var">m</span></span>.  Instead of generating the assumption <span class="inlinecode">(<span class="id" title="var">n</span></span> <span class="inlinecode">=?</span> <span class="inlinecode"><span class="id" title="var">m</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">true</span></span>, which
+    usually requires some massaging before we can use it, this
+    principle gives us right away the assumption we really need: <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span>
+    <span class="inlinecode"><span class="id" title="var">m</span></span>.
+
+<div class="paragraph"> </div>
+
+    Following the terminology introduced in <a href="Logic.html"><span class="inlineref">Logic</span></a>, we call this
+    the "reflection principle for equality on numbers," and we say
+    that the boolean <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=?</span> <span class="inlinecode"><span class="id" title="var">m</span></span> is <i>reflected in</i> the proposition
+    <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">m</span></span>. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">reflect</span> (<span class="id" title="var">P</span> : <span class="id" title="keyword">Prop</span>) : <span class="id" title="var">bool</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">ReflectT</span> (<span class="id" title="var">H</span> :   <span class="id" title="var">P</span>) : <span class="id" title="var">reflect</span> <span class="id" title="var">P</span> <span class="id" title="var">true</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">ReflectF</span> (<span class="id" title="var">H</span> : ¬<span class="id" title="var">P</span>) : <span class="id" title="var">reflect</span> <span class="id" title="var">P</span> <span class="id" title="var">false</span>.<br/>
+</div>
+
+<div class="doc">
+Notice that the only way to produce evidence for <span class="inlinecode"><span class="id" title="var">reflect</span></span> <span class="inlinecode"><span class="id" title="var">P</span></span>
+    <span class="inlinecode"><span class="id" title="var">true</span></span> is by showing <span class="inlinecode"><span class="id" title="var">P</span></span> and then using the <span class="inlinecode"><span class="id" title="var">ReflectT</span></span> constructor.
+
+<div class="paragraph"> </div>
+
+    If we play this reasoning backwards, it says we can extract
+    <i>evidence</i> for <span class="inlinecode"><span class="id" title="var">P</span></span> from evidence for <span class="inlinecode"><span class="id" title="var">reflect</span></span> <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode"><span class="id" title="var">true</span></span>. 
+<div class="paragraph"> </div>
+
+ To put this observation to work, we first prove that the
+    statements <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">↔</span> <span class="inlinecode"><span class="id" title="var">b</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">true</span></span> and <span class="inlinecode"><span class="id" title="var">reflect</span></span> <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode"><span class="id" title="var">b</span></span> are indeed
+    equivalent.  First, the left-to-right implication: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">iff_reflect</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">P</span> <span class="id" title="var">b</span>, (<span class="id" title="var">P</span> ↔ <span class="id" title="var">b</span> = <span class="id" title="var">true</span>) → <span class="id" title="var">reflect</span> <span class="id" title="var">P</span> <span class="id" title="var">b</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;WORK&nbsp;IN&nbsp;CLASS&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+(The right-to-left implication is left as an exercise.) 
+<div class="paragraph"> </div>
+
+<a id="lab303"></a><h3 class="section"> </h3>
+ We can think of <span class="inlinecode"><span class="id" title="var">reflect</span></span> as a variant of the usual "if and only
+    if" connective; the advantage of <span class="inlinecode"><span class="id" title="var">reflect</span></span> is that, by destructing
+    a hypothesis or lemma of the form <span class="inlinecode"><span class="id" title="var">reflect</span></span> <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode"><span class="id" title="var">b</span></span>, we can perform
+    case analysis on <span class="inlinecode"><span class="id" title="var">b</span></span> while <i>at the same time</i> generating
+    appropriate hypothesis in the two branches (<span class="inlinecode"><span class="id" title="var">P</span></span> in the first
+    subgoal and <span class="inlinecode">¬</span> <span class="inlinecode"><span class="id" title="var">P</span></span> in the second). 
+<div class="paragraph"> </div>
+
+<a id="lab304"></a><h3 class="section"> </h3>
+ Let's use <span class="inlinecode"><span class="id" title="var">reflect</span></span> to produce a smoother proof of
+    <span class="inlinecode"><span class="id" title="var">filter_not_empty_In</span></span>.
+
+<div class="paragraph"> </div>
+
+    We begin by recasting the <span class="inlinecode"><span class="id" title="var">eqb_eq</span></span> lemma in terms of <span class="inlinecode"><span class="id" title="var">reflect</span></span>: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Theorem reflect_iff : forall P b, reflect P b -&gt; (P &lt;-&gt; b = true).
+Proof.
+   Admitted.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Lemma</span> <span class="id" title="var">eqbP</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span>, <span class="id" title="var">reflect</span> (<span class="id" title="var">n</span> = <span class="id" title="var">m</span>) (<span class="id" title="var">n</span> =? <span class="id" title="var">m</span>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">iff_reflect</span>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">eqb_eq</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab305"></a><h3 class="section"> </h3>
+ The proof of <span class="inlinecode"><span class="id" title="var">filter_not_empty_In</span></span> now goes as follows.  Notice
+    how the calls to <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> and <span class="inlinecode"><span class="id" title="tactic">rewrite</span></span> in the earlier proof of
+    this theorem are combined here into a single call to
+    <span class="inlinecode"><span class="id" title="tactic">destruct</span></span>. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">filter_not_empty_In'</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">l</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">filter</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> ⇒ <span class="id" title="var">n</span> =? <span class="id" title="var">x</span>) <span class="id" title="var">l</span> ≠ [] →<br/>
+&nbsp;&nbsp;<span class="id" title="var">In</span> <span class="id" title="var">n</span> <span class="id" title="var">l</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">l</span>. <span class="id" title="tactic">induction</span> <span class="id" title="var">l</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">m</span> <span class="id" title="var">l'</span> <span class="id" title="var">IHl'</span>].<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;l&nbsp;=&nbsp;<span class="inlinecode"></span>&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;l&nbsp;=&nbsp;m&nbsp;::&nbsp;l'&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">destruct</span> (<span class="id" title="var">eqbP</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">EQnm</span> | <span class="id" title="var">NEQnm</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;n&nbsp;=&nbsp;m&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">_</span>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">EQnm</span>. <span class="id" title="tactic">left</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;n&nbsp;&lt;&gt;&nbsp;m&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">H'</span>. <span class="id" title="tactic">right</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">IHl'</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">H'</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div><h3 class="section slidesplit"> </h3>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Fixpoint count n l :=
+  match l with
+  | [] =&gt; 0
+  | m :: l&#x27; =&gt; (if n =? m then 1 else 0) + count n l&#x27;
+  end.
+
+Theorem eqbP_practice : forall n l,
+  count n l = 0 -&gt; ~(In n l).
+Proof.
+  intros n l Hcount. induction l as [| m l&#x27; IHl&#x27;].
+   Admitted.
+
+Inductive nostutter {X:Type} : list X -&gt; Prop :=
+ 
+.
+
+Example test_nostutter_1: nostutter [3;1;4;1;5;6].
+ Admitted.
+
+Example test_nostutter_2:  nostutter (@nil nat).
+ Admitted.
+
+Example test_nostutter_3:  nostutter [5].
+ Admitted.
+
+Example test_nostutter_4:      not (nostutter [3;1;1;4]).
+ Admitted.
+
+Definition manual_grade_for_nostutter : option (nat*string) := None.
+
+Inductive merge {X:Type} : list X -&gt; list X -&gt; list X -&gt; Prop :=
+
+.
+
+Theorem merge_filter : forall (X : Set) (test: X-&gt;bool) (l l1 l2 : list X),
+  merge l1 l2 l -&gt;
+  All (fun n =&gt; test n = true) l1 -&gt;
+  All (fun n =&gt; test n = false) l2 -&gt;
+  filter test l = l1.
+Proof.
+   Admitted.
+
+Inductive pal {X:Type} : list X -&gt; Prop :=
+
+.
+
+Theorem pal_app_rev : forall (X:Type) (l : list X),
+  pal (l ++ (rev l)).
+Proof.
+   Admitted.
+
+Theorem pal_rev : forall (X:Type) (l: list X) , pal l -&gt; l = rev l.
+Proof.
+   Admitted.
+
+Theorem palindrome_converse: forall {X: Type} (l: list X),
+    l = rev l -&gt; pal l.
+Proof.
+   Admitted.
+
+Module RecallIn.
+   Fixpoint In (A : Type) (x : A) (l : list A) : Prop :=
+     match l with
+     | [] =&gt; False
+     | x&#x27; :: l&#x27; =&gt; x&#x27; = x \/ In A x l&#x27;
+     end.
+End RecallIn.
+
+Definition manual_grade_for_NoDup_disjoint_etc : option (nat*string) := None.
+
+Lemma in_split : forall (X:Type) (x:X) (l:list X),
+  In x l -&gt;
+  exists l1 l2, l = l1 ++ x :: l2.
+Proof.
+   Admitted.
+
+Inductive repeats {X:Type} : list X -&gt; Prop :=
+  
+.
+
+Definition manual_grade_for_check_repeats : option (nat*string) := None.
+
+Theorem pigeonhole_principle: excluded_middle -&gt;
+  forall (X:Type) (l1  l2:list X),
+  (forall x, In x l1 -&gt; In x l2) -&gt;
+  length l2 &lt; length l1 -&gt;
+  repeats l1.
+Proof.
+  intros EM X l1. induction l1 as [|x l1&#x27; IHl1&#x27;].
+   Admitted.
+
+From Stdlib Require Import Strings.Ascii.
+
+Definition string := list ascii.
+
+Lemma provable_equiv_true : forall (P : Prop), P -&gt; (P &lt;-&gt; True).
+Proof.
+  intros.
+  split.
+  - intros. constructor.
+  - intros _. apply H.
+Qed.
+
+Lemma not_equiv_false : forall (P : Prop), ~P -&gt; (P &lt;-&gt; False).
+Proof.
+  intros.
+  split.
+  - apply H.
+  - intros. destruct H0.
+Qed.
+
+Lemma null_matches_none : forall (s : string), (s =~ EmptySet) &lt;-&gt; False.
+Proof.
+  intros.
+  apply not_equiv_false.
+  unfold not. intros. inversion H.
+Qed.
+
+Lemma empty_matches_eps : forall (s : string), s =~ EmptyStr &lt;-&gt; s = [ ].
+Proof.
+  split.
+  - intros. inversion H. reflexivity.
+  - intros. rewrite H. apply MEmpty.
+Qed.
+
+Lemma empty_nomatch_ne : forall (a : ascii) s, (a :: s =~ EmptyStr) &lt;-&gt; False.
+Proof.
+  intros.
+  apply not_equiv_false.
+  unfold not. intros. inversion H.
+Qed.
+
+Lemma char_nomatch_char :
+  forall (a b : ascii) s, b &lt;&gt; a -&gt; (b :: s =~ Char a &lt;-&gt; False).
+Proof.
+  intros.
+  apply not_equiv_false.
+  unfold not.
+  intros.
+  apply H.
+  inversion H0.
+  reflexivity.
+Qed.
+
+Lemma char_eps_suffix : forall (a : ascii) s, a :: s =~ Char a &lt;-&gt; s = [ ].
+Proof.
+  split.
+  - intros. inversion H. reflexivity.
+  - intros. rewrite H. apply MChar.
+Qed.
+
+Lemma app_exists : forall (s : string) re0 re1,
+  s =~ App re0 re1 &lt;-&gt;
+  exists s0 s1, s = s0 ++ s1 /\ s0 =~ re0 /\ s1 =~ re1.
+Proof.
+  intros.
+  split.
+  - intros. inversion H. exists s1, s2. split.
+    * reflexivity.
+    * split. apply H3. apply H4.
+  - intros [ s0 [ s1 [ Happ [ Hmat0 Hmat1 ] ] ] ].
+    rewrite Happ. apply (MApp s0 _ s1 _ Hmat0 Hmat1).
+Qed.
+
+Lemma app_ne : forall (a : ascii) s re0 re1,
+  a :: s =~ (App re0 re1) &lt;-&gt;
+  ([ ] =~ re0 /\ a :: s =~ re1) \/
+  exists s0 s1, s = s0 ++ s1 /\ a :: s0 =~ re0 /\ s1 =~ re1.
+Proof.
+   Admitted.
+
+Lemma union_disj : forall (s : string) re0 re1,
+  s =~ Union re0 re1 &lt;-&gt; s =~ re0 \/ s =~ re1.
+Proof.
+  intros. split.
+  - intros. inversion H.
+    + left. apply H2.
+    + right. apply H1.
+  - intros [ H | H ].
+    + apply MUnionL. apply H.
+    + apply MUnionR. apply H.
+Qed.
+
+Lemma star_ne : forall (a : ascii) s re,
+  a :: s =~ Star re &lt;-&gt;
+  exists s0 s1, s = s0 ++ s1 /\ a :: s0 =~ re /\ s1 =~ Star re.
+Proof.
+   Admitted.
+
+Definition refl_matches_eps m :=
+  forall re : reg_exp ascii, reflect ([ ] =~ re) (m re).
+
+Fixpoint match_eps (re: reg_exp ascii) : bool
+  . Admitted.
+
+Lemma match_eps_refl : refl_matches_eps match_eps.
+Proof.
+   Admitted.
+
+Definition is_der re (a : ascii) re&#x27; :=
+  forall s, a :: s =~ re &lt;-&gt; s =~ re&#x27;.
+
+Definition derives d := forall a re, is_der re a (d a re).
+
+Fixpoint derive (a : ascii) (re : reg_exp ascii) : reg_exp ascii
+  . Admitted.
+
+Example c := ascii_of_nat 99.
+Example d := ascii_of_nat 100.
+
+Example test_der0 : match_eps (derive c (EmptySet)) = false.
+Proof.
+   Admitted.
+
+Example test_der1 : match_eps (derive c (Char c)) = true.
+Proof.
+   Admitted.
+
+Example test_der2 : match_eps (derive c (Char d)) = false.
+Proof.
+   Admitted.
+
+Example test_der3 : match_eps (derive c (App (Char c) EmptyStr)) = true.
+Proof.
+   Admitted.
+
+Example test_der4 : match_eps (derive c (App EmptyStr (Char c))) = true.
+Proof.
+   Admitted.
+
+Example test_der5 : match_eps (derive c (Star (Char c))) = true.
+Proof.
+   Admitted.
+
+Example test_der6 :
+  match_eps (derive d (derive c (App (Char c) (Char d)))) = true.
+Proof.
+   Admitted.
+
+Example test_der7 :
+  match_eps (derive d (derive c (App (Char d) (Char c)))) = false.
+Proof.
+   Admitted.
+
+Lemma derive_corr : derives derive.
+Proof.
+   Admitted.
+
+Definition matches_regex m : Prop :=
+  forall (s : string) re, reflect (s =~ re) (m s re).
+
+Fixpoint regex_match (s : string) (re : reg_exp ascii) : bool
+  . Admitted.
+
+Theorem regex_match_correct : matches_regex regex_match.
+Proof.
+   Admitted.</div></div>
+
+
+<div class="doc">
+<a id="lab306"></a><h3 class="section"> </h3>
+ This small example shows reflection giving us a small gain in
+    convenience; in larger developments, using <span class="inlinecode"><span class="id" title="var">reflect</span></span> consistently
+    can often lead to noticeably shorter and clearer proof scripts.
+    We'll see many more examples in later chapters and in <i>Programming
+    Language Foundations</i>.
+
+<div class="paragraph"> </div>
+
+    This way of using <span class="inlinecode"><span class="id" title="var">reflect</span></span> was popularized by <i>SSReflect</i>, a Rocq
+    library that has been used to formalize important results in
+    mathematics, including the 4-color theorem and the Feit-Thompson
+    theorem.  The name SSReflect stands for <i>small-scale reflection</i>,
+    i.e., the pervasive use of reflection to streamline small proof
+    steps by turning them into boolean computations. 
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+/* Lecture-deck ergonomics when the jsCoq panel is open (.toggled):
+ * the SF book layout centers 760-1000px content in whatever width remains
+ * beside the panel, leaving dead gutters ("the middle column") and narrow
+ * code. Use the full column instead. */
+#ide-wrapper.toggled #main,
+#ide-wrapper.toggled #header {
+    max-width: none;
+    margin: 0;
+    padding-left: 24px;
+    padding-right: 12px;
+}
+#ide-wrapper.toggled #page {
+    padding-left: 0 !important;
+}
+/* code blocks get the room that frees up */
+#ide-wrapper.toggled #main .CodeMirror {
+    max-width: none;
+}
+
+/* --- vertical density: the LF terse layout is airy (22px/34px text, tall
+ * paragraph spacers, generous block margins). Tighten for lecture slides. */
+#main .doc {
+    line-height: 28px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+#main .paragraph {
+    height: 0.3em;
+}
+#main .code,
+#main .CodeMirror {
+    line-height: 26px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+#main .CodeMirror pre.CodeMirror-line {
+    line-height: 26px;
+}
+/* static (non-editor) view: the double-space rules between code groups */
+#main hr.doublespaceincode {
+    border: none;
+    margin: 4px 0;
+}
