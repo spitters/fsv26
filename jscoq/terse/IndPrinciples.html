@@ -1,0 +1,598 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="common/css/sf.css" rel="stylesheet" type="text/css" />
+<title>IndPrinciples: Induction Principles</title>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="common/slides.js"></script>
+<link href="common/css/slides.css" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" type="text/css" href="../dist/frontend/index.css"/>
+<link rel="stylesheet" type="text/css" href="common/css/jscoq.css"/>
+<link rel="stylesheet" type="text/css" href="../pls-deck.css"/>
+<script src="../jscoq-agent-sf2.js" type="module"></script>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<div id='logoinheader'><a href='https://softwarefoundations.cis.upenn.edu'>
+<img src='common/media/image/sf_logo_sm.png' alt='Software Foundations Logo'></a></div>
+<div class='booktitleinheader'><a href='index.html'>Volume 1: Logical Foundations</a></div>
+<ul id='menu'>
+   <li class='section_name'><a href='toc.html'>Table of Contents</a></li>
+   <li class='section_name'><a href='coqindex.html'>Index</a></li>
+   <li class='section_name'><a href='deps.html'>Roadmap</a></li>
+</ul>
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">IndPrinciples<span class="subtitle">Induction Principles</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ Let's take a deeper look at induction. 
+</div>
+
+<div class="doc">
+<a id="lab362"></a><h1 class="section">Basics</h1>
+
+<div class="paragraph"> </div>
+
+ The automatically generated <i>induction principle</i> for <span class="inlinecode"><span class="id" title="var">nat</span></span>: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Set Warnings &quot;-notation-overridden&quot;.
+From LF Require Export ProofObjects.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Check</span> <span class="id" title="var">nat_ind</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">P</span> : <span class="id" title="var">nat</span> → <span class="id" title="keyword">Prop</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">P</span> 0 →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">P</span> <span class="id" title="var">n</span> → <span class="id" title="var">P</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">P</span> <span class="id" title="var">n</span>.<br/>
+</div>
+
+<div class="doc">
+In English: Suppose <span class="inlinecode"><span class="id" title="var">P</span></span> is a property of natural numbers (that is,
+      <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> is a <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> for every <span class="inlinecode"><span class="id" title="var">n</span></span>). To show that <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> holds of all
+      <span class="inlinecode"><span class="id" title="var">n</span></span>, it suffices to show:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" title="var">P</span></span> holds of <span class="inlinecode">0</span>
+
+</li>
+<li> for any <span class="inlinecode"><span class="id" title="var">n</span></span>, if <span class="inlinecode"><span class="id" title="var">P</span></span> holds of <span class="inlinecode"><span class="id" title="var">n</span></span>, then <span class="inlinecode"><span class="id" title="var">P</span></span> holds of <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span>. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+<a id="lab363"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ We can directly use the induction principle with <span class="inlinecode"><span class="id" title="tactic">apply</span></span>: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">mul_0_r'</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>:<span class="id" title="var">nat</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">n</span> × 0 = 0.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">nat_ind</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;n&nbsp;=&nbsp;O&nbsp;*)</span> <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;n&nbsp;=&nbsp;S&nbsp;n'&nbsp;*)</span> <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">n'</span> <span class="id" title="var">IHn'</span>. <span class="id" title="tactic">rewrite</span> → <span class="id" title="var">IHn'</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Why the <span class="inlinecode"><span class="id" title="tactic">induction</span></span> tactic is nicer than <span class="inlinecode"><span class="id" title="tactic">apply</span></span>:
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" title="tactic">apply</span></span> requires extra manual bookkeeping (the <span class="inlinecode"><span class="id" title="tactic">intros</span></span> in the
+       inductive case)
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="tactic">apply</span></span> requires <span class="inlinecode"><span class="id" title="var">n</span></span> to be left universally quantified
+
+</li>
+<li> <span class="inlinecode"><span class="id" title="tactic">apply</span></span> requires us to manually specify the name of the induction
+       principle. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+<a id="lab364"></a>
+
+<div class="paragraph"> </div>
+
+<a id="lab365"></a><h3 class="section"> </h3>
+ Rocq generates induction principles for every datatype defined with
+    <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span>, including those that aren't recursive. 
+<div class="paragraph"> </div>
+
+ If we define type <span class="inlinecode"><span class="id" title="var">t</span></span> with constructors <span class="inlinecode"><span class="id" title="var">c<sub>1</sub></span></span> ... <span class="inlinecode"><span class="id" title="var">cn</span></span>,
+    Rocq generates:
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">t_ind</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">P</span> : <span class="id" title="var">t</span> → <span class="id" title="keyword">Prop</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... <span class="id" title="tactic">case</span> <span class="id" title="keyword">for</span> <span class="id" title="var">c<sub>1</sub></span> ... →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... <span class="id" title="tactic">case</span> <span class="id" title="keyword">for</span> <span class="id" title="var">c<sub>2</sub></span> ... → ...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... <span class="id" title="tactic">case</span> <span class="id" title="keyword">for</span> <span class="id" title="var">cn</span> ... →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <span class="id" title="var">t</span>, <span class="id" title="var">P</span> <span class="id" title="var">n</span>
+</span>    The specific shape of each case depends on the arguments to the
+    corresponding constructor. 
+<div class="paragraph"> </div>
+
+<a id="lab366"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ An example with no constructor arguments: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Theorem plus_one_r&#x27; : forall n:nat,
+  n + 1 = S n.
+Proof.
+   Admitted.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">time</span> : <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">day</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">night</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">time_ind</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">P</span> : <span class="id" title="var">time</span> → <span class="id" title="keyword">Prop</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">P</span> <span class="id" title="var">day</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">P</span> <span class="id" title="var">night</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">t</span> : <span class="id" title="var">time</span>, <span class="id" title="var">P</span> <span class="id" title="var">t</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab367"></a>
+
+<div class="paragraph"> </div>
+
+<a id="lab368"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ An example with constructor arguments: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Inductive rgb : Type :=
+  | red
+  | green
+  | blue.
+Check rgb_ind.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">natlist</span> : <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">nnil</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">ncons</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) (<span class="id" title="var">l</span> : <span class="id" title="var">natlist</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">natlist_ind</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">P</span> : <span class="id" title="var">natlist</span> → <span class="id" title="keyword">Prop</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">P</span> <span class="id" title="var">nnil</span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">∀</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) (<span class="id" title="var">l</span> : <span class="id" title="var">natlist</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">P</span> <span class="id" title="var">l</span> → <span class="id" title="var">P</span> (<span class="id" title="var">ncons</span> <span class="id" title="var">n</span> <span class="id" title="var">l</span>)) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">l</span> : <span class="id" title="var">natlist</span>, <span class="id" title="var">P</span> <span class="id" title="var">l</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab369"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ In general, the automatically generated induction principle for
+    inductive type <span class="inlinecode"><span class="id" title="var">t</span></span> is formed as follows:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Each constructor <span class="inlinecode"><span class="id" title="var">c</span></span> generates one case of the principle.
+
+</li>
+<li> If <span class="inlinecode"><span class="id" title="var">c</span></span> takes no arguments, that case is:
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"P holds of c"
+</span>
+</li>
+<li> If <span class="inlinecode"><span class="id" title="var">c</span></span> takes arguments <span class="inlinecode"><span class="id" title="var">x<sub>1</sub></span>:<span class="id" title="var">a<sub>1</sub></span></span> ... <span class="inlinecode"><span class="id" title="var">xn</span>:<span class="id" title="var">an</span></span>, that case is:
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"For all x<sub>1</sub>:a<sub>1</sub> ... xn:an,
+          if [P] holds of each of the arguments of type [t],
+          then [P] holds of [c x<sub>1</sub> ... xn]"
+</span>      But that oversimplifies a little.  An assumption about <span class="inlinecode"><span class="id" title="var">P</span></span>
+      holding of an argument <span class="inlinecode"><span class="id" title="var">x</span></span> of type <span class="inlinecode"><span class="id" title="var">t</span></span> actually occurs
+      immediately after the quantification of <span class="inlinecode"><span class="id" title="var">x</span></span>.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+<a id="lab370"></a><h3 class="section"> </h3>
+
+<div class="paragraph"> </div>
+
+ For example, suppose we had written the definition of <span class="inlinecode"><span class="id" title="var">natlist</span></span> a little
+    differently: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">natlist'</span> : <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">nnil'</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">nsnoc</span> (<span class="id" title="var">l</span> : <span class="id" title="var">natlist'</span>) (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>).<br/>
+</div>
+
+<div class="doc">
+Now the induction principle case for <span class="inlinecode"><span class="id" title="var">nsnoc</span></span> is a bit different
+    than the earlier case for <span class="inlinecode"><span class="id" title="var">ncons</span></span>: 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Check</span> <span class="id" title="var">natlist'_ind</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">P</span> : <span class="id" title="var">natlist'</span> → <span class="id" title="keyword">Prop</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">P</span> <span class="id" title="var">nnil'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">∀</span> <span class="id" title="var">l</span> : <span class="id" title="var">natlist'</span>, <span class="id" title="var">P</span> <span class="id" title="var">l</span> → <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">P</span> (<span class="id" title="var">nsnoc</span> <span class="id" title="var">l</span> <span class="id" title="var">n</span>)) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <span class="id" title="var">natlist'</span>, <span class="id" title="var">P</span> <span class="id" title="var">n</span>.<br/>
+</div>
+
+<div class="doc">
+<a id="lab371"></a><h1 class="section">Induction Principles for Propositions</h1>
+
+<div class="paragraph"> </div>
+
+ Inductive definitions of propositions also cause Rocq to generate
+    induction priniciples.  For example, recall our proposition <span class="inlinecode"><span class="id" title="var">ev</span></span>
+    from <a href="IndProp.html"><span class="inlineref">IndProp</span></a>: 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Inductive booltree : Type :=
+  | bt_empty
+  | bt_leaf (b : bool)
+  | bt_branch (b : bool) (t1 t2 : booltree).
+
+Definition booltree_property_type : Type := booltree -&gt; Prop.
+
+Definition base_case (P : booltree_property_type) : Prop
+  . Admitted.
+
+Definition leaf_case (P : booltree_property_type) : Prop
+  . Admitted.
+
+Definition branch_case (P : booltree_property_type) : Prop
+  . Admitted.
+
+Definition booltree_ind_type :=
+  forall (P : booltree_property_type),
+    base_case P -&gt;
+    leaf_case P -&gt;
+    branch_case P -&gt;
+    forall (b : booltree), P b.
+
+Theorem booltree_ind_type_correct : booltree_ind_type.
+Proof.  Admitted.
+
+Inductive Toy : Type :=
+  
+.
+
+Theorem Toy_correct : exists f g,
+  forall P : Toy -&gt; Prop,
+    (forall b : bool, P (f b)) -&gt;
+    (forall (n : nat) (t : Toy), P t -&gt; P (g n t)) -&gt;
+    forall t : Toy, P t.
+Proof.  Admitted.
+
+Inductive tree (X:Type) : Type :=
+  | leaf (x : X)
+  | node (t1 t2 : tree X).
+Check tree_ind.
+
+Inductive foo&#x27; (X:Type) : Type :=
+  | C1 (l : list X) (f : foo&#x27; X)
+  | C2.
+
+Definition P_m0r (n:nat) : Prop :=
+  n * 0 = 0.
+
+Definition P_m0r&#x27; : nat -&gt; Prop :=
+  fun n =&gt; n * 0 = 0.
+
+Theorem mul_0_r&#x27;&#x27; : forall n:nat,
+  P_m0r n.
+Proof.
+  apply nat_ind.
+  -  reflexivity.
+  - 
+    
+    intros n IHn.
+    unfold P_m0r in IHn. unfold P_m0r. simpl. apply IHn. Qed.
+
+Theorem add_assoc&#x27; : forall n m p : nat,
+  n + (m + p) = (n + m) + p.
+Proof.
+  
+  intros n m p.
+  
+  induction n as [| n&#x27;].
+  -  reflexivity.
+  - 
+    simpl. rewrite -&gt; IHn&#x27;. reflexivity.  Qed.
+
+Theorem add_comm&#x27; : forall n m : nat,
+  n + m = m + n.
+Proof.
+  induction n as [| n&#x27;].
+  -  intros m. rewrite -&gt; add_0_r. reflexivity.
+  -  intros m. simpl. rewrite -&gt; IHn&#x27;.
+    rewrite &lt;- plus_n_Sm. reflexivity.  Qed.
+
+Theorem add_comm&#x27;&#x27; : forall n m : nat,
+  n + m = m + n.
+Proof.
+  
+  induction m as [| m&#x27;]. 
+  -  simpl. rewrite -&gt; add_0_r. reflexivity.
+  -  simpl. rewrite &lt;- IHm&#x27;.
+    rewrite &lt;- plus_n_Sm. reflexivity.  Qed.</div></div>
+<h3 class="section slidesplit"> </h3>
+<div class="code">
+
+<span class="id" title="keyword">Print</span> <span class="id" title="var">ev</span>.<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;===&gt;<br/>
+<br/>
+&nbsp;&nbsp;Inductive&nbsp;ev&nbsp;:&nbsp;nat&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop&nbsp;:=<br/>
+&nbsp;&nbsp;|&nbsp;ev_0&nbsp;:&nbsp;ev&nbsp;0<br/>
+&nbsp;&nbsp;|&nbsp;ev_SS&nbsp;:&nbsp;forall&nbsp;n&nbsp;:&nbsp;nat,&nbsp;ev&nbsp;n&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;ev&nbsp;(S&nbsp;(S&nbsp;n)))<br/>
+<br/>
+*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">ev_ind</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">P</span> : <span class="id" title="var">nat</span> → <span class="id" title="keyword">Prop</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">P</span> 0 →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">ev</span> <span class="id" title="var">n</span> → <span class="id" title="var">P</span> <span class="id" title="var">n</span> → <span class="id" title="var">P</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>))) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">ev</span> <span class="id" title="var">n</span> → <span class="id" title="var">P</span> <span class="id" title="var">n</span>.<br/>
+</div>
+
+<div class="doc">
+In English, <span class="inlinecode"><span class="id" title="var">ev_ind</span></span> says: Suppose <span class="inlinecode"><span class="id" title="var">P</span></span> is a property of natural
+    numbers.  To show that <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> holds whenever <span class="inlinecode"><span class="id" title="var">n</span></span> is even, it suffices
+    to show:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" title="var">P</span></span> holds for <span class="inlinecode">0</span>,
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> for any <span class="inlinecode"><span class="id" title="var">n</span></span>, if <span class="inlinecode"><span class="id" title="var">n</span></span> is even and <span class="inlinecode"><span class="id" title="var">P</span></span> holds for <span class="inlinecode"><span class="id" title="var">n</span></span>, then <span class="inlinecode"><span class="id" title="var">P</span></span>
+        holds for <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n</span>)</span>. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+<a id="lab372"></a>
+
+<div class="paragraph"> </div>
+
+<a id="lab373"></a><h3 class="section"> </h3>
+ The precise form of an <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span> definition can affect the
+    induction principle Rocq generates. 
+</div>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Inductive ev&#x27; : nat -&gt; Prop :=
+  | ev&#x27;_0 : ev&#x27; 0
+  | ev&#x27;_2 : ev&#x27; 2
+  | ev&#x27;_sum n m (Hn : ev&#x27; n) (Hm : ev&#x27; m) : ev&#x27; (n + m).
+
+Theorem ev_ev&#x27; : forall n, ev n -&gt; ev&#x27; n.
+Proof.
+  apply ev_ind.
+  - 
+    apply ev&#x27;_0.
+  - 
+    intros m Hm IH.
+    apply (ev&#x27;_sum 2 m).
+    + apply ev&#x27;_2.
+    + apply IH.
+Qed.</div></div>
+<div class="code">
+
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">le<sub>1</sub></span> : <span class="id" title="var">nat</span> → <span class="id" title="var">nat</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">le1_n</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>, <span class="id" title="var">le<sub>1</sub></span> <span class="id" title="var">n</span> <span class="id" title="var">n</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">le1_S</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span>, (<span class="id" title="var">le<sub>1</sub></span> <span class="id" title="var">n</span> <span class="id" title="var">m</span>) → (<span class="id" title="var">le<sub>1</sub></span> <span class="id" title="var">n</span> (<span class="id" title="var">S</span> <span class="id" title="var">m</span>)).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Notation</span> &quot;m &lt;=1 n" := (<span class="id" title="var">le<sub>1</sub></span> <span class="id" title="var">m</span> <span class="id" title="var">n</span>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" title="var">n</span></span> could instead be a parameter:  
+<div class="paragraph"> </div>
+
+<a id="lab374"></a><h3 class="section"> </h3>
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">le<sub>2</sub></span> (<span class="id" title="var">n</span>:<span class="id" title="var">nat</span>) : <span class="id" title="var">nat</span> → <span class="id" title="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" title="var">le2_n</span> : <span class="id" title="var">le<sub>2</sub></span> <span class="id" title="var">n</span> <span class="id" title="var">n</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">le2_S</span> <span class="id" title="var">m</span> (<span class="id" title="var">H</span> : <span class="id" title="var">le<sub>2</sub></span> <span class="id" title="var">n</span> <span class="id" title="var">m</span>) : <span class="id" title="var">le<sub>2</sub></span> <span class="id" title="var">n</span> (<span class="id" title="var">S</span> <span class="id" title="var">m</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Notation</span> &quot;m &lt;=2 n" := (<span class="id" title="var">le<sub>2</sub></span> <span class="id" title="var">m</span> <span class="id" title="var">n</span>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
+</div>
+
+<div class="doc">
+<a id="lab375"></a><h3 class="section"> </h3>
+
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Check</span> <span class="id" title="var">le1_ind</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">P</span> : <span class="id" title="var">nat</span> → <span class="id" title="var">nat</span> → <span class="id" title="keyword">Prop</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">P</span> <span class="id" title="var">n</span> <span class="id" title="var">n</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">n</span> &lt;=1 <span class="id" title="var">m</span> → <span class="id" title="var">P</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> → <span class="id" title="var">P</span> <span class="id" title="var">n</span> (<span class="id" title="var">S</span> <span class="id" title="var">m</span>)) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">n<sub>0</sub></span> : <span class="id" title="var">nat</span>, <span class="id" title="var">n</span> &lt;=1 <span class="id" title="var">n<sub>0</sub></span> → <span class="id" title="var">P</span> <span class="id" title="var">n</span> <span class="id" title="var">n<sub>0</sub></span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Check</span> <span class="id" title="var">le2_ind</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) (<span class="id" title="var">P</span> : <span class="id" title="var">nat</span> → <span class="id" title="keyword">Prop</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">P</span> <span class="id" title="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">∀</span> <span class="id" title="var">m</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">n</span> &lt;=2 <span class="id" title="var">m</span> → <span class="id" title="var">P</span> <span class="id" title="var">m</span> → <span class="id" title="var">P</span> (<span class="id" title="var">S</span> <span class="id" title="var">m</span>)) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">n<sub>0</sub></span> : <span class="id" title="var">nat</span>, <span class="id" title="var">n</span> &lt;=2 <span class="id" title="var">n<sub>0</sub></span> → <span class="id" title="var">P</span> <span class="id" title="var">n<sub>0</sub></span>.<br/>
+</div>
+
+<div class="doc">
+The latter is simpler, and corresponds to Rocq's own
+    definition. 
+</div>
+
+<div class="doc">
+<a id="lab376"></a><h1 class="section">Explicit Proof Objects for Induction</h1>
+
+<div class="paragraph"> </div>
+
+ Recall again the induction principle on naturals that Rocq generates for
+    us automatically from the Inductive declaration for <span class="inlinecode"><span class="id" title="var">nat</span></span>. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Check</span> <span class="id" title="var">nat_ind</span> :<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">P</span> : <span class="id" title="var">nat</span> → <span class="id" title="keyword">Prop</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">P</span> 0 →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">P</span> <span class="id" title="var">n</span> → <span class="id" title="var">P</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>)) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">P</span> <span class="id" title="var">n</span>.<br/>
+</div>
+
+<div class="doc">
+There's nothing magic about this induction lemma: it's just
+   another Rocq lemma that requires a proof.  Rocq generates the proof
+   automatically too...  
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Print</span> <span class="id" title="var">nat_ind</span>.<br/>
+</div>
+
+<div class="doc">
+We can rewrite that more tidily as follows: 
+</div>
+<div class="code">
+<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">build_proof</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">P</span> : <span class="id" title="var">nat</span> → <span class="id" title="keyword">Prop</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">evPO</span> : <span class="id" title="var">P</span> 0)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">evPS</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <span class="id" title="var">nat</span>, <span class="id" title="var">P</span> <span class="id" title="var">n</span> → <span class="id" title="var">P</span> (<span class="id" title="var">S</span> <span class="id" title="var">n</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">n</span> : <span class="id" title="var">nat</span>) : <span class="id" title="var">P</span> <span class="id" title="var">n</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">n</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| 0 ⇒ <span class="id" title="var">evPO</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">k</span> ⇒ <span class="id" title="var">evPS</span> <span class="id" title="var">k</span> (<span class="id" title="var">build_proof</span> <span class="id" title="var">P</span> <span class="id" title="var">evPO</span> <span class="id" title="var">evPS</span> <span class="id" title="var">k</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">nat_ind_tidy</span> := <span class="id" title="var">build_proof</span>.<br/>
+</div>
+
+<div class="doc">
+Recursive function <span class="inlinecode"><span class="id" title="var">build_proof</span></span> thus pattern matches against
+    <span class="inlinecode"><span class="id" title="var">n</span></span>, recursing all the way down to 0, and building up a proof
+    as it returns. 
+<div class="paragraph"> </div>
+
+ We can use our own hand-coded induction principle in place
+    of the automatically-generated induction principle with the
+    <span class="inlinecode"><span class="id" title="tactic">induction</span></span> <span class="inlinecode">...</span> <span class="inlinecode"><span class="id" title="keyword">using</span></span> <span class="inlinecode">...</span> variant of the usual <span class="inlinecode"><span class="id" title="tactic">induction</span></span>
+    tactic. 
+</div>
+<div class="code">
+
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">mul_0_r'''</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>:<span class="id" title="var">nat</span>,<br/>
+&nbsp;&nbsp;<span class="id" title="var">n</span> × 0 = 0.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">n</span> <span class="id" title="keyword">as</span> [ | <span class="id" title="var">n'</span> <span class="id" title="var">IHn'</span>] <span class="id" title="keyword">using</span> <span class="id" title="var">nat_ind_tidy</span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">rewrite</span> → <span class="id" title="var">IHn'</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div><h3 class="section slidesplit"> </h3>
+<div class="HIDEFROMHTML jscoq-fill"><div class="code">Lemma even_ev : forall n: nat, even n = true -&gt; ev n.
+Proof.
+  induction n; intros.
+  - apply ev_0.
+  - destruct n.
+    + simpl in H. inversion H.
+    + simpl in H.
+      apply ev_SS.
+Abort.
+
+Definition nat_ind2 :
+  forall (P : nat -&gt; Prop),
+  P 0 -&gt;
+  P 1 -&gt;
+  (forall n : nat, P n -&gt; P (S(S n))) -&gt;
+  forall n : nat , P n :=
+    fun P =&gt; fun P0 =&gt; fun P1 =&gt; fun PSS =&gt;
+      fix f (n:nat) := match n with
+                         0 =&gt; P0
+                       | 1 =&gt; P1
+                       | S (S n&#x27;) =&gt; PSS n&#x27; (f n&#x27;)
+                       end.
+
+Lemma even_ev : forall n, even n = true -&gt; ev n.
+Proof.
+  intros.
+  induction n as [ | |n&#x27;] using nat_ind2.
+  - apply ev_0.
+  - simpl in H.
+    inversion H.
+  - simpl in H.
+    apply ev_SS.
+    apply IHn&#x27;.
+    apply H.
+Qed.
+
+Notation &quot;( x , y , .. , z )&quot; := (pair .. (pair x y) .. z) : core_scope.
+
+Inductive t_tree (X : Type) : Type :=
+| t_leaf
+| t_branch : (t_tree X * X * t_tree X) -&gt; t_tree X.
+
+Arguments t_leaf {X}.
+Arguments t_branch {X}.
+
+Check t_tree_ind.
+
+Fixpoint reflect {X : Type} (t : t_tree X) : t_tree X :=
+  match t with
+  | t_leaf =&gt; t_leaf
+  | t_branch (l, v, r) =&gt; t_branch (reflect r, v, reflect l)
+  end.
+
+Theorem reflect_involution : forall (X : Type) (t : t_tree X),
+    reflect (reflect t) = t.
+Proof.
+  intros X t. induction t.
+  - reflexivity.
+  - destruct p as [[l v] r]. simpl. Abort.
+
+Definition better_t_tree_ind_type : Prop
+  . Admitted.
+
+Definition better_t_tree_ind : better_t_tree_ind_type
+  . Admitted.
+
+Theorem reflect_involution : forall (X : Type) (t : t_tree X),
+    reflect (reflect t) = t.
+Proof.  Admitted.</div></div>
+
+</div>
+
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

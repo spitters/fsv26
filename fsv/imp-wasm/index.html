@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Imp in WebAssembly — FSV 2026</title>
+  <link rel="stylesheet" type="text/css" href="../../assets/style.css">
+  <style>
+    body { max-width: 60em; margin: 1em auto; padding: 0 1em; }
+    table { border-collapse: collapse; width: 100%; }
+    td, th { vertical-align: top; padding: 0.4em 0.6em; border-bottom: 1px solid #ddd; }
+    th { text-align: left; }
+    pre { margin: 0; font-size: 90%; }
+    .out { font-family: monospace; }
+    .ok { color: #1a6b1a; }
+    .bad { color: #a11; }
+    .small { font-size: 90%; color: #444; }
+    button { padding: 0.2em 0.8em; }
+  </style>
+</head>
+<body>
+<h1>Imp in WebAssembly</h1>
+
+<p>
+The <a href="../../jscoq/lf/ImpCEvalFun.html">ImpCEvalFun</a> chapter defines
+<code>ceval_step</code>, a step-indexed evaluation <em>function</em> for Imp, and proves it
+agrees with the evaluation <em>relation</em> <code>ceval</code> of
+<a href="../../jscoq/lf/Imp.html">Imp</a>
+(<code>ceval_and_ceval_step_coincide</code>). The chapter
+<a href="../../jscoq/lf/Extraction.html">Extraction</a> then extracts that function to OCaml and
+runs Imp programs with it.
+</p>
+
+<p>
+This page does the same thing in your browser. Each program below was compiled to a WebAssembly
+module by <a href="https://github.com/peregrine-project">Peregrine</a>, through CertiRocq's
+verified extraction pipeline, and the module computes
+<code>ceval_step</code> applied to that program. The button fetches the module, runs it, and reads
+the resulting <code>nat</code> out of the module's linear memory. No Rocq runs here:
+this is compiled code, about 40 KB per program.
+</p>
+
+<table>
+<thead><tr><th style="width: 40%">Program</th><th>Input and result</th><th style="width: 24em">Run</th></tr></thead>
+<tbody>
+
+<tr data-module="cond" data-kind="nat" data-expected="4">
+  <td><pre>X := 2;
+if (X &lt;= 1)
+then Y := 3
+else Z := 4
+end</pre>
+  <div class="small">the program of <code>example_test_ceval</code></div></td>
+  <td>from the empty state; <code>Z</code> afterwards</td>
+  <td><button>Run</button> <span class="out"></span></td>
+</tr>
+
+<tr data-module="fact5" data-kind="nat" data-expected="120">
+  <td><pre>Z := X;
+Y := 1;
+while ~(Z = 0) do
+  Y := Y * Z;
+  Z := Z - 1
+end</pre>
+  <div class="small"><code>fact_in_coq</code></div></td>
+  <td><code>X = 5</code>; <code>Y</code> afterwards</td>
+  <td><button>Run</button> <span class="out"></span></td>
+</tr>
+
+<tr data-module="fact7" data-kind="nat" data-expected="5040">
+  <td><div class="small"><code>fact_in_coq</code> again</div></td>
+  <td><code>X = 7</code>; <code>Y</code> afterwards</td>
+  <td><button>Run</button> <span class="out"></span></td>
+</tr>
+
+<tr data-module="slow" data-kind="nat" data-expected="4000">
+  <td><pre>while ~(X = 0) do
+  Z := Z - 1;
+  X := X - 1
+end</pre>
+  <div class="small"><code>subtract_slowly</code></div></td>
+  <td><code>X = 1000</code>, <code>Z = 5000</code>; <code>Z</code> afterwards,
+      so the loop runs 1000 times</td>
+  <td><button>Run</button> <span class="out"></span></td>
+</tr>
+
+</tbody>
+</table>
+
+<h2>The same programs over machine integers</h2>
+
+<p>
+The table above runs the chapter's definitions, in which a number is a chain of <code>S</code>
+constructors. The modules below run <a href="ImpInt.v">ImpInt.v</a>: the same Imp, written out with
+<code>nat</code> replaced by <code>Uint63.int</code>, so that <code>+</code>, <code>-</code> and
+<code>*</code> are single machine instructions. <strong>Nothing is proved about this
+version.</strong> <code>ceval_and_ceval_step_coincide</code> is a theorem about the
+<code>nat</code> evaluator and does not transfer, because <code>int</code> wraps at 2<sup>63</sup>
+where <code>nat</code> does not. It is here for the contrast: this is what the arithmetic costs.
+</p>
+
+<table>
+<thead><tr><th style="width: 40%">Program</th><th>Input and result</th><th style="width: 24em">Run</th></tr></thead>
+<tbody>
+
+<tr data-module="ifact8" data-kind="int63" data-expected="40320">
+  <td><div class="small">factorial, machine arithmetic</div></td>
+  <td><code>X = 8</code>; <code>Y</code> afterwards
+      <div class="small">the row the <code>nat</code> build cannot run</div></td>
+  <td><button>Run</button> <span class="out"></span></td>
+</tr>
+
+<tr data-module="ifact12" data-kind="int63" data-expected="479001600">
+  <td><div class="small">factorial, machine arithmetic</div></td>
+  <td><code>X = 12</code>; <code>Y</code> afterwards</td>
+  <td><button>Run</button> <span class="out"></span></td>
+</tr>
+
+<tr data-module="ifact20" data-kind="int63" data-expected="2432902008176640000">
+  <td><div class="small">factorial, machine arithmetic</div></td>
+  <td><code>X = 20</code>; <code>Y</code> afterwards
+      <div class="small">20! is the last one that fits; 21! would wrap silently</div></td>
+  <td><button>Run</button> <span class="out"></span></td>
+</tr>
+
+<tr data-module="islow" data-kind="int63" data-expected="4000">
+  <td><div class="small"><code>subtract_slowly</code>, machine arithmetic</div></td>
+  <td><code>X = 1000</code>, <code>Z = 5000</code>; <code>Z</code> afterwards</td>
+  <td><button>Run</button> <span class="out"></span></td>
+</tr>
+
+</tbody>
+</table>
+
+<h2>What the numbers are doing</h2>
+
+<p>
+The modules inherit Rocq's unary <code>nat</code>, so the result is a chain of
+<code>S</code> cells in linear memory and the page decodes it by walking that chain. Arithmetic is
+unary too: <code>Y * Z</code> is repeated addition, and <code>Nat.add</code> recurses as deep as its
+first argument. A browser gives WebAssembly a fixed stack of about a megabyte and no way to ask for
+more, so the factorial demo stops being runnable here somewhere past <code>X = 7</code>:
+<code>X = 8</code> needs a 40320-deep recursion and overflows, although the same module computes it
+under a host that allows a large stack. <code>subtract_slowly</code> keeps every number small, and
+its 1000 iterations cost nothing, because the loop is a tail call.
+</p>
+
+<p>
+This is the reason the Extraction chapter spends a section on remapping <code>nat</code> to a
+machine integer type before extracting. The second table is that trade made explicit: its results
+are single 64-bit words, which is why 20! runs in under a millisecond and why the proof does not
+come along.
+</p>
+
+<p class="small">
+The modules need the WebAssembly tail-call instructions, which current desktop Chrome and Firefox
+have. The drivers that produced them are <a href="ImpWasm.v">ImpWasm.v</a> (chapter definitions)
+and <a href="ImpIntWasm.v">ImpIntWasm.v</a> with <a href="ImpInt.v">ImpInt.v</a> (machine
+integers); each pins a program and its input, and <code>peregrine wasm</code> compiles the result.
+One module is one closed computation, so trying your own Imp program means extracting the chapter's
+parser as well, which this page does not do.
+</p>
+
+<p><a href="../../index.html">← course page</a></p>
+
+<script src="imp-wasm.js"></script>
+</body>
+</html>
